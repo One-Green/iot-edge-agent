@@ -40,7 +40,12 @@ def read_tds(board: ArduinoMega, _pipeline_dict: dict, _temperature=25) -> dict:
 
 
 def read_ph(board: ArduinoMega, _pipeline_dict: dict) -> dict:
-    pass
+    d = mean_sample(board=board, pin=PH_SENSOR_PIN)
+    ph = 7 + ((2.5 - d["voltage"]) / 0.18)
+    _pipeline_dict["ph_average_adc"] = d["adc"]
+    _pipeline_dict["ph_average_voltage"] = d["voltage"]
+    _pipeline_dict["ph_average_value"] = ph
+    return _pipeline_dict
 
 
 def read_sonars(board: ArduinoMega, _pipeline_dict: dict) -> dict:
@@ -62,5 +67,4 @@ def read_sensors(board: ArduinoMega) -> dict:
     d = read_tds(board=board, _pipeline_dict=d)
     d = read_ph(board=board, _pipeline_dict=d)
     d = read_sonars(board=board, _pipeline_dict=d)
-
     return d
