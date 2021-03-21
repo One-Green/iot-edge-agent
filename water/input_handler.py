@@ -4,14 +4,13 @@ sys.path.insert(0, "..")
 import time
 from pyfirmata import ArduinoMega
 from core.sensor_processing.math import BasicLinearReg
+from core.sensor_processing.sampling import mean_sample
 from settings import PH_SENSOR_PIN, TDS_SENSOR_PIN
 from settings import WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
-import statistics
 
 reg = BasicLinearReg()
 
 # Analog Map definition
-adc_to_voltage_model = reg.fit([0, 1024], [0, 5])  # convert analog 0-1024 to 0-5V
 water_level_model = reg.fit([0, 1024], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
 nutrient_level_model = reg.fit([0, 1024], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
 ph_downer_level_model = reg.fit([0, 1024], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
@@ -21,29 +20,6 @@ sonar_processing = [
     (NUTRIENT_LEVEL, nutrient_level_model, "nutrient_level"),
     (PH_DOWNER_LEVEL_PIN, ph_downer_level_model, "ph_downer_level")
 ]
-
-
-def sampling_adc(board: ArduinoMega, pin: int, sample_number: int = 30) -> dict:
-    adc_list = []
-    voltage_list = []
-    for _ in range(sample_number):
-        adc = board.analog[pin].read()
-        time.sleep(0.01)
-        print(adc)
-        if type(adc) in [float, int]:
-            adc_list.append(adc)
-            voltage_list.append(adc_to_voltage_model(adc))
-    print(adc_list)
-    return {"adc_list": adc_list, "voltage_list": voltage_list}
-
-
-def mean_sample(*args, **kwargs):
-    d = sampling_adc(*args, **kwargs)
-    print(d)
-    return {
-        "adc": statistics.mean(d["adc_list"]),
-        "voltage": statistics.mean(d["voltage_list"])
-    }
 
 
 def read_tds(board: ArduinoMega, _pipeline_dict: dict, _temperature=25) -> dict:
@@ -57,7 +33,14 @@ def read_tds(board: ArduinoMega, _pipeline_dict: dict, _temperature=25) -> dict:
                   - 255.86 * voltage_compensation * voltage_compensation
                   + 857.39 * voltage_compensation
           ) * 0.5  # convert voltage value to tds value
-    return tds
+    _pipeline_dict["tds_average_adc"] = d["adc"]
+    _pipeline_dict["tds_average_voltage"] = d["voltage"]
+    _pipeline_dict["tds_average_ppm"] = tds
+    return _pipeline_dict
+
+
+def read_ph(board: ArduinoMega, _pipeline_dict: dict) -> dict:
+    pass
 
 
 def read_sonars(board: ArduinoMega, _pipeline_dict: dict) -> dict:
@@ -76,5 +59,8 @@ def read_sonars(board: ArduinoMega, _pipeline_dict: dict) -> dict:
 
 def read_sensors(board: ArduinoMega) -> dict:
     d = {}
+    d = read_tds(board=board, _pipeline_dict=d)
+    d = read_ph(board=board, _pipeline_dict=d)
     d = read_sonars(board=board, _pipeline_dict=d)
+
     return d
