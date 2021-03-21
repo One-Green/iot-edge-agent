@@ -73,4 +73,17 @@ void loop() {
     Serial.print(dPHDowner);
     Serial.println();
 
+
+    Serial.print("dWaterMapped=");
+    Serial.print(dWaterMapped);
+    Serial.print(" ; ");
+
+    Serial.print("dNutrientMapped=");
+    Serial.print(dNutrientMapped);
+    Serial.print(" ; ");
+
+    Serial.print("dPHDownerMapped=");
+    Serial.print(dPHDownerMapped);
+    Serial.println();
+
 }
