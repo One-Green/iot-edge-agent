@@ -18,7 +18,7 @@ def sampling_adc(board: ArduinoMega, pin: int, sample_number: int = 30) -> dict:
     return {"adc_list": adc_list, "voltage_list": voltage_list}
 
 
-def mean_sample(*args, **kwargs):
+def mean_sample(*args, **kwargs) -> dict:
     d = sampling_adc(*args, **kwargs)
     return {
         "adc": statistics.mean(d["adc_list"]),
