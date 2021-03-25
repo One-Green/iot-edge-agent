@@ -7,6 +7,7 @@ import paho.mqtt.client as mqtt
 from influx_line_protocol import Metric
 from pyfirmata import ArduinoMega, util
 from input_handler import read_sensors
+from output_handler import off_on_digital_output
 from core.utils import detect_arduino_usb_serial
 from settings import PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_SENSOR_TOPIC
@@ -51,5 +52,9 @@ mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
 while True:
     inputs = read_sensors(board)
     mqtt_client.publish(MQTT_SENSOR_TOPIC, generate_influx_protocol(inputs))
+    controller_callback = read_callback()
+    r = list(off_on_digital_output(board=board, _callback=controller_callback))
+    for _ in r:
+        if _["changed"]:
+            print(_)
     time.sleep(0.5)
-    print(read_callback())
