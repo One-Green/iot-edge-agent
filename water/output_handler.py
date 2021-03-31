@@ -52,13 +52,13 @@ def apply_if_changed(
     if _callback_requirement != _state:
         board.digital[_pin].write(_callback[_key])
         return {
-            "pin": _pin_name,
+            "pin_name": _pin_name,
             "changed": True,
             "state": _state
         }
     else:
         return {
-            "pin": _pin_name,
+            "pin_name": _pin_name,
             "changed": False,
             "state": _state
         }
