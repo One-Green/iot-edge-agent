@@ -11,6 +11,7 @@ from output_handler import off_on_digital_output
 from core.utils import detect_arduino_usb_serial
 from settings import PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_SENSOR_TOPIC
+from db import get_db, db_update_or_create
 
 print(f"[UART][INFO] Connecting Arduino Mega Board ...")
 board = ArduinoMega(detect_arduino_usb_serial())
@@ -20,6 +21,8 @@ for pin in [PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_D
     board.analog[pin].enable_reporting()
 print(f"[UART][OK] Connected to this board: {board}")
 inputs = {}  # input dict for sensors values from arduino mega 2560
+
+db = get_db()
 
 
 def on_connect(client, userdata, flags, rc):
@@ -51,6 +54,9 @@ mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
 
 while True:
     inputs = read_sensors(board)
+    # save to local db for state-exporter.py
+    for k, v in inputs.items():
+        db_update_or_create(k, v)
     mqtt_client.publish(MQTT_SENSOR_TOPIC, generate_influx_protocol(inputs))
     controller_callback = read_callback()
     r = list(off_on_digital_output(board=board, _callback=controller_callback))
