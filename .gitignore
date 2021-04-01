@@ -8,7 +8,16 @@ __pycache__/
 # C extensions
 *.so
 
+# intelliJ
+.idea/
+*.iml
+
+# water node agent
+water/*.json
+water/*.sqlite
+
 # Distribution / packaging
+Pipfile.lock
 .Python
 build/
 develop-eggs/
