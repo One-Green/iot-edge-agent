@@ -16,7 +16,7 @@ db = SqliteDatabase('database.sqlite')
 class Buffer(Model):
     modified = DateTimeField()
     key = TextField()
-    value = FloatField()
+    value = BlobField()
 
     class Meta:
         database = db
@@ -43,3 +43,10 @@ def db_update_or_create(key, value):
         ).execute()
     except Buffer.DoesNotExist:
         Buffer.create(key=key, value=value, modified=datetime.now())
+
+
+def get_state():
+    d = {}
+    for _ in Buffer().select():
+        d[_.key] = _.value
+    return d
