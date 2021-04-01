@@ -22,9 +22,9 @@ setup-python:
 
 setup: setup-pm2 setup-python
 
-run-water-agent: water/agent_callback.py water/agent.py water/state-exporter.py
+run-water-agent: water/agent_callback.py water/agent.py water/state_exporter.py
 	cd water && \
 	pm2 start agent_callback.py --interpreter python3 && \
 	pm2 start agent.py --interpreter python3 && \
-	pm2 start state-exporter.py --interpreter python3 && \
+	pm2 start state_exporter.py --interpreter python3 && \
 	pm2 save
