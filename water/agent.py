@@ -11,7 +11,7 @@ from output_handler import off_on_digital_output
 from core.utils import detect_arduino_usb_serial
 from settings import PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_SENSOR_TOPIC
-from db import get_db, db_update_or_create
+from core.db import get_db, db_update_or_create
 
 print(f"[UART][INFO] Connecting Arduino Mega Board ...")
 board = ArduinoMega(detect_arduino_usb_serial())
@@ -23,6 +23,7 @@ print(f"[UART][OK] Connected to this board: {board}")
 inputs = {}  # input dict for sensors values from arduino mega 2560
 
 db = get_db()
+db_update_or_create("node_type", "water")
 
 
 def on_connect(client, userdata, flags, rc):
