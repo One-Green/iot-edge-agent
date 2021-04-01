@@ -36,3 +36,5 @@ def detect_arduino_usb_serial():
     for _ in serial_ports():
         if "usbserial" in _:
             return _
+        if "ttyUSB" in _:
+            return _
