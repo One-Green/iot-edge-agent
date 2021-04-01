@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, "..")
 import json
 import paho.mqtt.client as mqtt
-from db import get_db, db_update_or_create
+from core.db import get_db, db_update_or_create
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_CONTROLLER_TOPIC
 
 db = get_db()
