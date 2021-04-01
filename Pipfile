@@ -11,6 +11,8 @@ pyfirmata = "*"
 influx-line-protocol = "*"
 falcon = "*"
 peewee = "*"
+waitress = "*"
+simplejson = "*"
 
 [dev-packages]
 ipython = "*"
