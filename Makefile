@@ -9,15 +9,18 @@ agent-tty-status:
 	 @echo "Use kill <PID> to close tty"
 
 setup-pm2:
-	apt install wget
+	apt install wget -y
 	wget -qO- https://getpm2.com/install.sh | bash
 
 setup-python:
-	apt install python3.8-dev python3-pip -y
+	apt install python3-dev python3-pip -y
 	pip3 install -r requirements.txt
 
-run-water-agent: water/agent_callback.py water/agent.py
+setup: setup-pm2 setup-python
+
+run-water-agent: water/agent_callback.py water/agent.py water/state-exporter.py
 	cd water && \
 	pm2 start agent_callback.py --interpreter python3 && \
 	pm2 start agent.py --interpreter python3 && \
+	pm2 start state-exporter.py --interpreter python3 && \
 	pm2 save
