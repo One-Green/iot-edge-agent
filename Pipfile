@@ -9,6 +9,8 @@ setuptools = "*"
 paho-mqtt = "*"
 pyfirmata = "*"
 influx-line-protocol = "*"
+falcon = "*"
+peewee = "*"
 
 [dev-packages]
 ipython = "*"
