@@ -3,7 +3,7 @@ import statistics
 from pyfirmata import ArduinoMega
 from core.sensor_processing.math import BasicLinearReg
 
-adc_to_voltage_model = BasicLinearReg().fit([0, 1024], [0, 5])  # convert analog 0-1024 to 0-5V
+adc_to_voltage_model = BasicLinearReg().fit([0, 1], [0, 5])  # convert analog 0-1024 (0-1 with firmata) to 0-5V
 
 
 def sampling_adc(board: ArduinoMega, pin: int, sample_number: int = 30) -> dict:
