@@ -28,3 +28,8 @@ run-water-agent: water/agent_callback.py water/agent.py water/state_exporter.py
 	pm2 start agent.py --interpreter python3 && \
 	pm2 start state_exporter.py --interpreter python3 && \
 	pm2 save
+
+run-pio-flash:
+	cd water/mega && \
+	pio update && \
+	pio run -t upload
