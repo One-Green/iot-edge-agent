@@ -29,7 +29,12 @@ run-water-agent: water/agent_callback.py water/agent.py water/state_exporter.py
 	pm2 start state_exporter.py --interpreter python3 && \
 	pm2 save
 
-run-pio-flash:
-	cd water/mega && \
+flash-mega-firmware: mega_firmata
+	cd mega_firmata && \
+	pio update && \
+	pio run -t upload
+
+flash-uno-sonar: nano_sonar
+	cd nano_sonar && \
 	pio update && \
 	pio run -t upload
