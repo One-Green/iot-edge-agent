@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #define WATER_LEVEL_TRIGGER_PIN  2
 #define WATER_LEVEL_ECHO_PIN     3
 #define WATER_LEVEL_MIN_DISTANCE 0
