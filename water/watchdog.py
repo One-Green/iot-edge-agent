@@ -14,8 +14,15 @@ while True:
                 get_state()[CALLBACK_UPDATED_AT_KEY].decode('utf-8')
             )
     ) > CALLBACK_MAX_TIME_DELTA:
-        db_update_or_create(SAFETY_MODE_KEY, True)
-    else:
-        db_update_or_create(SAFETY_MODE_KEY, False)
+        safe = True
 
+    else:
+        safe = False
+
+    db_update_or_create(SAFETY_MODE_KEY, safe)
+
+    if safe:
+        # TODO : loop for digital output off
+        # here
+        pass
     time.sleep(0.5)
