@@ -17,8 +17,6 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     for k, v in json.loads(message.payload).items():
         db_update_or_create(k, v)
-    with open('callback.json', 'w') as outfile:
-        outfile.write(message.payload.decode("utf-8"))
 
 
 mqtt_client = mqtt.Client()

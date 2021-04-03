@@ -2,7 +2,6 @@ import sys
 
 sys.path.insert(0, "..")
 import time
-import json
 import paho.mqtt.client as mqtt
 from influx_line_protocol import Metric
 from pyfirmata import ArduinoMega, util
@@ -40,14 +39,6 @@ def generate_influx_protocol(_sensor_dict: dict) -> str:
     return str(metric)
 
 
-def read_callback() -> dict:
-    try:
-        with open("callback.json", "r+") as infile:
-            return json.load(infile)
-    except FileNotFoundError:
-        return {}
-
-
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(username=MQTT_USER, password=MQTT_PASSWORD)
 mqtt_client.on_connect = on_connect
@@ -59,8 +50,7 @@ while True:
     for k, v in inputs.items():
         db_update_or_create(k, v)
     mqtt_client.publish(MQTT_SENSOR_TOPIC, generate_influx_protocol(inputs))
-    controller_callback = read_callback()
-    r = list(off_on_digital_output(board=board, _callback=controller_callback))
+    r = list(off_on_digital_output(board=board))
     for _ in r:
         if _["changed"]:
             print(_)
