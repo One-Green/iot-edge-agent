@@ -24,6 +24,7 @@ from settings import WATER_PUMP_PIN, NUTRIENT_PUMP_PIN, PH_DOWNER_PUMP_PIN, MIXE
 from core.db import get_state
 
 digital_output_list = [
+    # callback key  ------  output pin -----  pin name (from settings.py)
     ("water_pump_signal", WATER_PUMP_PIN, f'{WATER_PUMP_PIN=}'.split('=')[0]),
     ("nutrient_pump_signal", NUTRIENT_PUMP_PIN, f'{NUTRIENT_PUMP_PIN=}'.split('=')[0]),
     ("ph_downer_pump_signal", PH_DOWNER_PUMP_PIN, f'{PH_DOWNER_PUMP_PIN=}'.split('=')[0]),
