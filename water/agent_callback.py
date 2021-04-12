@@ -5,6 +5,8 @@ import json
 import paho.mqtt.client as mqtt
 from core.db import get_db, db_update_or_create
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_CONTROLLER_TOPIC
+from settings import CALLBACK_UPDATED_AT_KEY
+from datetime import datetime
 
 db = get_db()
 
@@ -17,8 +19,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     for k, v in json.loads(message.payload).items():
         db_update_or_create(k, v)
-    with open('callback.json', 'w') as outfile:
-        outfile.write(message.payload.decode("utf-8"))
+    db_update_or_create(CALLBACK_UPDATED_AT_KEY, datetime.now().isoformat())
 
 
 mqtt_client = mqtt.Client()

@@ -21,8 +21,12 @@ import sys
 sys.path.insert(0, "..")
 from pyfirmata import ArduinoMega
 from settings import WATER_PUMP_PIN, NUTRIENT_PUMP_PIN, PH_DOWNER_PUMP_PIN, MIXER_PUMP_PIN
+from settings import SAFETY_MODE_KEY
+from core.db import get_state
+
 
 digital_output_list = [
+    # callback key  ------  output pin -----  pin name (from settings.py)
     ("water_pump_signal", WATER_PUMP_PIN, f'{WATER_PUMP_PIN=}'.split('=')[0]),
     ("nutrient_pump_signal", NUTRIENT_PUMP_PIN, f'{NUTRIENT_PUMP_PIN=}'.split('=')[0]),
     ("ph_downer_pump_signal", PH_DOWNER_PUMP_PIN, f'{PH_DOWNER_PUMP_PIN=}'.split('=')[0]),
@@ -64,12 +68,14 @@ def apply_if_changed(
         }
 
 
-def off_on_digital_output(board: ArduinoMega, _callback: dict):
-    for _key, _pin, _pin_name in digital_output_list:
-        yield apply_if_changed(
-            board=board,
-            _callback=_callback,
-            _key=_key,
-            _pin=_pin,
-            _pin_name=_pin_name
-        )
+def off_on_digital_output(board: ArduinoMega):
+    status = get_state()
+    if not status[SAFETY_MODE_KEY]:
+        for _key, _pin, _pin_name in digital_output_list:
+            yield apply_if_changed(
+                board=board,
+                _callback=status,
+                _key=_key,
+                _pin=_pin,
+                _pin_name=_pin_name
+            )

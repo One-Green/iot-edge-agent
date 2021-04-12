@@ -2,7 +2,6 @@ import sys
 
 sys.path.insert(0, "..")
 import time
-import json
 import paho.mqtt.client as mqtt
 from influx_line_protocol import Metric
 from pyfirmata import ArduinoMega, util
@@ -11,6 +10,7 @@ from output_handler import off_on_digital_output
 from core.utils import detect_arduino_usb_serial
 from settings import PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_SENSOR_TOPIC
+from settings import SAFETY_MODE_KEY
 from core.db import get_db, db_update_or_create
 
 print(f"[UART][INFO] Connecting Arduino Mega Board ...")
@@ -24,6 +24,7 @@ inputs = {}  # input dict for sensors values from arduino mega 2560
 
 db = get_db()
 db_update_or_create("node_type", "water")
+db_update_or_create(SAFETY_MODE_KEY, False)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -40,14 +41,6 @@ def generate_influx_protocol(_sensor_dict: dict) -> str:
     return str(metric)
 
 
-def read_callback() -> dict:
-    try:
-        with open("callback.json", "r+") as infile:
-            return json.load(infile)
-    except FileNotFoundError:
-        return {}
-
-
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(username=MQTT_USER, password=MQTT_PASSWORD)
 mqtt_client.on_connect = on_connect
@@ -59,8 +52,7 @@ while True:
     for k, v in inputs.items():
         db_update_or_create(k, v)
     mqtt_client.publish(MQTT_SENSOR_TOPIC, generate_influx_protocol(inputs))
-    controller_callback = read_callback()
-    r = list(off_on_digital_output(board=board, _callback=controller_callback))
+    r = list(off_on_digital_output(board=board))
     for _ in r:
         if _["changed"]:
             print(_)
