@@ -66,7 +66,7 @@ Once MQTT configured, start agent by using these commands
     # REST API Server
     pm2 start state_exporter.py --interpreter python3
     # This command will save this current state
-    # agent will start at at boot
+    # allow agent start after linux boot / crash etc
     pm2 save
 
 
