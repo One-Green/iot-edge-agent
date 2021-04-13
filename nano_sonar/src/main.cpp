@@ -10,7 +10,7 @@
 #include <Wire.h>
 #include "MCP4725.h"
 
-#define DEBUG 1
+#define DEBUG 0
 #ifdef DEBUG
  #define DEBUG_PRINT(x)  Serial.print (x)
  #define DEBUG_PRINTLN(x)  Serial.println (x)
@@ -35,7 +35,7 @@
 #define PH_DOWNER_LEVEL_MAX_DISTANCE    450
 
 #define TCA9548A_ADDRESS                0x70
-#define MCP4725_ADDRESS                 0x62
+#define MCP4725_ADDRESS                 0x60
 
 int dWater ;
 int dWaterMapped ;
@@ -82,13 +82,13 @@ void setup() {
     pinMode(PH_DOWNER_LEVEL_TRIGGER_PIN, OUTPUT);
     pinMode(PH_DOWNER_LEVEL_ECHO_PIN, INPUT);
 
-    TCA9548A(1);
+    TCA9548A(0);
     MCP_1.begin();
 
-    TCA9548A(2);
+    TCA9548A(1);
     MCP_2.begin();
 
-    TCA9548A(3);
+    TCA9548A(2);
     MCP_3.begin();
 
 
@@ -99,17 +99,17 @@ void loop() {
 
     int dWater = baseUltrasonicReader(WATER_LEVEL_TRIGGER_PIN, WATER_LEVEL_ECHO_PIN);
     int dWaterMapped = map(dWater, WATER_LEVEL_MIN_DISTANCE, WATER_LEVEL_MAX_DISTANCE , 0, 4095 ) ; // analogWrite values from 0 to 255
-    TCA9548A(1); MCP_1.writeDAC(dWaterMapped);
+    TCA9548A(0); MCP_1.setValue(dWaterMapped);
     DEBUG_PRINT("dWater="); DEBUG_PRINT(dWater); DEBUG_PRINT(" ; ");
 
     int dNutrient = baseUltrasonicReader(NUTRIENT_LEVEL_TRIGGER_PIN, NUTRIENT_LEVEL_ECHO_PIN);
     int dNutrientMapped = map(dNutrient, NUTRIENT_LEVEL_MIN_DISTANCE, NUTRIENT_LEVEL_MAX_DISTANCE , 0, 4095 ) ; // analogWrite values from 0 to 255
-    TCA9548A(2); MCP_2.writeDAC(dWaterMapped);
+    TCA9548A(1); MCP_2.setValue(dNutrientMapped);
     DEBUG_PRINT("dNutrient="); DEBUG_PRINT(dNutrient); DEBUG_PRINT(" ; ");
 
     int dPHDowner = baseUltrasonicReader(PH_DOWNER_LEVEL_TRIGGER_PIN, PH_DOWNER_LEVEL_ECHO_PIN);
     int dPHDownerMapped = map(dPHDowner, PH_DOWNER_LEVEL_MIN_DISTANCE, PH_DOWNER_LEVEL_MAX_DISTANCE , 0, 4095 ) ; // analogWrite values from 0 to 255
-    TCA9548A(3); MCP_3.writeDAC(dWaterMapped);
+    TCA9548A(2); MCP_3.setValue(dPHDownerMapped);
     DEBUG_PRINT("dPHDowner="); DEBUG_PRINT(dPHDowner); DEBUG_PRINTLN();
 
     DEBUG_PRINT("dWaterMapped="); DEBUG_PRINT(dWaterMapped); DEBUG_PRINT(" ; ");
