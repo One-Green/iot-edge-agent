@@ -49,9 +49,10 @@ MCP4725 MCP_3(MCP4725_ADDRESS);
 
 void TCA9548A(uint8_t bus)
 {
-  Wire.beginTransmission(TCA9548A_ADDRESS);
-  Wire.write(1 << bus);
-  Wire.endTransmission();
+    if (i > 7) return;
+    Wire.beginTransmission(TCA9548A_ADDRESS);
+    Wire.write(1 << bus);
+    Wire.endTransmission();
 }
 
 int baseUltrasonicReader(int trigger, int echo) {
