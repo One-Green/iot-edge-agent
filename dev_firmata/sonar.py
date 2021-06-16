@@ -9,7 +9,7 @@ from pprint import pprint
 import time
 
 print(f"[UART][INFO] Connecting Arduino Mega Board ...")
-board = ArduinoMega(detect_arduino_usb_serial())
+board = ArduinoMega("/dev/tty.usbserial-1450")
 it = util.Iterator(board)
 it.start()
 for pin in [PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN]:
@@ -19,9 +19,9 @@ print(f"[UART][OK] Connected to this board: {board}")
 reg = BasicLinearReg()
 
 # Analog Map definition
-water_level_model = reg.fit([0, 0.945], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
-nutrient_level_model = reg.fit([0, 0.945], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
-ph_downer_level_model = reg.fit([0, 0.945], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
+water_level_model = reg.fit([0, 0.94], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
+nutrient_level_model = reg.fit([0, 0.94], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
+ph_downer_level_model = reg.fit([0, 0.94], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
 
 sonar_processing = [
     (WATER_LEVEL_PIN, water_level_model, "water_level"),
@@ -47,5 +47,6 @@ def read_sonars(board: ArduinoMega, _pipeline_dict: dict) -> dict:
 
 while True:
     # TODO : missing LOW PASS Filter on PWM > ADC
-    v = board.analog[WATER_LEVEL_PIN].read()
+    v = board.analog[0].read()
     print(v)
+    time.sleep(0.5)

@@ -37,9 +37,9 @@ flash-mega-firmware: mega_firmata
 flash-nano-sonar: nano_sonar
 	cd nano_sonar && \
 	pio update && \
-	pio run -t upload --upload-port /dev/tty.usbserial-1450 -e nano
+	pio run -t upload -e nano
 
 flash-uno-sonar: nano_sonar
 	cd nano_sonar && \
 	pio update && \
-	pio run -t  upload --upload-port /dev/tty.usbmodem14501 -e uno
+	pio run -t  upload

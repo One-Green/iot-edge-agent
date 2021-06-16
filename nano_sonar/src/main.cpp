@@ -8,7 +8,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "MCP4725.h"
+#include <MCP4725.h>
 
 #define DEBUG 0
 #ifdef DEBUG
