@@ -7,6 +7,7 @@ from influx_line_protocol import Metric
 from pyfirmata import ArduinoMega, util
 from input_handler import read_sensors
 from output_handler import off_on_digital_output
+from output_handler import set_actuator_safe
 from core.utils import detect_arduino_usb_serial
 from settings import PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_SENSOR_TOPIC
@@ -47,11 +48,27 @@ mqtt_client.on_connect = on_connect
 mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
 
 while True:
+    # Try to reconnect
+    # if connection lost
+    # set actuator in safe mod
+    try:
+        mqtt_client.reconnect()
+    except ConnectionRefusedError:
+        print("[MQTT][ERROR] Connection lost, setting actuator in safe mod")
+        set_actuator_safe(board=board, force_safe=True)
+
+    # Read sensors through firmata
     inputs = read_sensors(board)
-    # save to local db for state-exporter.py
+    # save to local db
     for k, v in inputs.items():
         db_update_or_create(k, v)
+    # publish to mqtt
     mqtt_client.publish(MQTT_SENSOR_TOPIC, generate_influx_protocol(inputs))
+
+    # check if mqtt callback is not in timeout ( water controller down)
+    # if callback in timeout set safe mod while water controller is up
+    set_actuator_safe(board=board)
+    # apply pin UP/DOWN following water controller rule (safe mod check already in function)
     r = list(off_on_digital_output(board=board))
     for _ in r:
         if _["changed"]:

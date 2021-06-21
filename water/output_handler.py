@@ -24,7 +24,6 @@ from settings import WATER_PUMP_PIN, NUTRIENT_PUMP_PIN, PH_DOWNER_PUMP_PIN, MIXE
 from settings import SAFETY_MODE_KEY
 from core.db import get_state
 
-
 digital_output_list = [
     # callback key  ------  output pin -----  pin name (from settings.py)
     ("water_pump_signal", WATER_PUMP_PIN, f'{WATER_PUMP_PIN=}'.split('=')[0]),
@@ -79,3 +78,20 @@ def off_on_digital_output(board: ArduinoMega):
                 _pin=_pin,
                 _pin_name=_pin_name
             )
+
+
+def set_actuator_safe(board: ArduinoMega, force_safe: bool = False) -> None:
+    if force_safe:
+        print("[ERROR] FORCE Safe mod detected !")
+        for _, _pin, __ in digital_output_list:
+            while bool(board.digital[_pin].read()):
+                board.digital[_pin].write(0)
+                print(f"[ERROR] Set {_pin} off")
+
+    status = get_state()
+    if status[SAFETY_MODE_KEY]:
+        print("[ERROR] Safe mod detected !")
+        for _, _pin, __ in digital_output_list:
+            while bool(board.digital[_pin].read()):
+                board.digital[_pin].write(0)
+                print(f"[ERROR] Set {_pin} off")
