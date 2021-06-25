@@ -19,7 +19,7 @@ class StateView:
 
 
 api = falcon.API()
-api.add_route('/state', StateView())
+api.add_route("/state", StateView())
 
 if __name__ == "__main__":
-    serve(api, host='0.0.0.0', port=8080)
+    serve(api, host="0.0.0.0", port=8080)

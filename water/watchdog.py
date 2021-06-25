@@ -11,9 +11,8 @@ from settings import logger
 
 while True:
     if (
-            datetime.now() - datetime.fromisoformat(
-                get_state()[CALLBACK_UPDATED_AT_KEY].decode('utf-8')
-                                                    )
+        datetime.now()
+        - datetime.fromisoformat(get_state()[CALLBACK_UPDATED_AT_KEY].decode("utf-8"))
     ) > CALLBACK_MAX_TIME_DELTA:
         safe = True
         logger.error("Safe mode is activated")

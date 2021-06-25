@@ -9,7 +9,13 @@ from input_handler import read_sensors
 from output_handler import off_on_digital_output
 from output_handler import set_actuator_safe
 from core.utils import detect_arduino_usb_serial
-from settings import PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
+from settings import (
+    PH_SENSOR_PIN,
+    TDS_SENSOR_PIN,
+    WATER_LEVEL_PIN,
+    NUTRIENT_LEVEL,
+    PH_DOWNER_LEVEL_PIN,
+)
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_SENSOR_TOPIC
 from settings import SAFETY_MODE_KEY
 from settings import logger
@@ -20,7 +26,13 @@ logger.info(f"[UART][INFO] Connecting Arduino Mega Board ...")
 board = ArduinoMega(detect_arduino_usb_serial())
 it = util.Iterator(board)
 it.start()
-for pin in [PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN]:
+for pin in [
+    PH_SENSOR_PIN,
+    TDS_SENSOR_PIN,
+    WATER_LEVEL_PIN,
+    NUTRIENT_LEVEL,
+    PH_DOWNER_LEVEL_PIN,
+]:
     board.analog[pin].enable_reporting()
 logger.info(f"[UART][OK] Connected to this board: {board}")
 inputs = {}  # input dict for sensors values from arduino mega 2560
@@ -36,11 +48,11 @@ def on_connect(client, userdata, flags, rc):
 
 def generate_influx_protocol(_sensor_dict: dict) -> str:
     metric = Metric("water")
-    metric.add_tag('water', 'water')
-    metric.add_value('nutrient_level_cm', _sensor_dict["nutrient_level_cm"])
-    metric.add_value('ph_downer_level_cm', _sensor_dict["ph_downer_level_cm"])
-    metric.add_value('ph_level', _sensor_dict["ph_average_value"])
-    metric.add_value('tds_level', _sensor_dict["tds_average_ppm"])
+    metric.add_tag("water", "water")
+    metric.add_value("nutrient_level_cm", _sensor_dict["nutrient_level_cm"])
+    metric.add_value("ph_downer_level_cm", _sensor_dict["ph_downer_level_cm"])
+    metric.add_value("ph_level", _sensor_dict["ph_average_value"])
+    metric.add_value("tds_level", _sensor_dict["tds_average_ppm"])
     return str(metric)
 
 

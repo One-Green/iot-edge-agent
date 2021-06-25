@@ -11,14 +11,20 @@ from settings import WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
 reg = BasicLinearReg()
 
 # Analog Map definition
-water_level_model = reg.fit([0, 1024], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
-nutrient_level_model = reg.fit([0, 1024], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
-ph_downer_level_model = reg.fit([0, 1024], [0, 450])  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
+water_level_model = reg.fit(
+    [0, 1024], [0, 450]
+)  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
+nutrient_level_model = reg.fit(
+    [0, 1024], [0, 450]
+)  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
+ph_downer_level_model = reg.fit(
+    [0, 1024], [0, 450]
+)  # convert analog 0-1024 (0-5V) to 0-450cm ultrasonic range
 
 sonar_processing = [
     (WATER_LEVEL_PIN, water_level_model, "water_level"),
     (NUTRIENT_LEVEL, nutrient_level_model, "nutrient_level"),
-    (PH_DOWNER_LEVEL_PIN, ph_downer_level_model, "ph_downer_level")
+    (PH_DOWNER_LEVEL_PIN, ph_downer_level_model, "ph_downer_level"),
 ]
 
 
@@ -29,10 +35,10 @@ def read_tds(board: ArduinoMega, _pipeline_dict: dict, _temperature=25) -> dict:
     # temperature compensation
     voltage_compensation = d["voltage"] / temperature_compensation
     tds = (
-                  133.42 * voltage_compensation * voltage_compensation * voltage_compensation
-                  - 255.86 * voltage_compensation * voltage_compensation
-                  + 857.39 * voltage_compensation
-          ) * 0.5  # convert voltage value to tds value
+        133.42 * voltage_compensation * voltage_compensation * voltage_compensation
+        - 255.86 * voltage_compensation * voltage_compensation
+        + 857.39 * voltage_compensation
+    ) * 0.5  # convert voltage value to tds value
     _pipeline_dict["tds_average_adc"] = d["adc"]
     _pipeline_dict["tds_average_voltage"] = d["voltage"]
     _pipeline_dict["tds_average_ppm"] = tds
