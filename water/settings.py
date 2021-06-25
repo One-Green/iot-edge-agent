@@ -3,7 +3,24 @@ Water settings
 
 """
 import os
+import sys
+import logging
 from datetime import timedelta
+from utils import get_log_level
+
+# ----- Logging parameter ----- > to all scripts
+LOG_LEVEL = get_log_level()
+logger = logging.getLogger()
+logger.setLevel(LOG_LEVEL)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(LOG_LEVEL)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+# Do not handle peewee logger
+peewee_logger = logging.getLogger('peewee')
+peewee_logger.addHandler(logging.StreamHandler())
+peewee_logger.setLevel(logging.CRITICAL)
 
 # ----- SAFETY ----- > watchdog.py
 CALLBACK_UPDATED_AT_KEY: str = 'callback_updated_at'  # key for last callback updated at datetime
