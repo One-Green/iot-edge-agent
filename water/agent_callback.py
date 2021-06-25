@@ -6,6 +6,7 @@ import paho.mqtt.client as mqtt
 from core.db import get_db, db_update_or_create
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_CONTROLLER_TOPIC
 from settings import CALLBACK_UPDATED_AT_KEY
+from settings import logger
 from datetime import datetime
 
 db = get_db()
@@ -13,7 +14,7 @@ db = get_db()
 
 def on_connect(client, userdata, flags, rc):
     client.subscribe(MQTT_CONTROLLER_TOPIC)
-    print(f"[MQTT][OK] Connected to Callback {MQTT_HOST=} / {MQTT_CONTROLLER_TOPIC}")
+    logger.info(f"MQTT Connected to Callback {MQTT_HOST=} / {MQTT_CONTROLLER_TOPIC}")
 
 
 def on_message(client, userdata, message):

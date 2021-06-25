@@ -15,13 +15,13 @@ v = {"tag": "water",
 Author: Shanmugathas Vigneswaran
 mail : shanmugathas.vigneswaran@outlook.fr
 """
-
 import sys
 
 sys.path.insert(0, "..")
 from pyfirmata import ArduinoMega
 from settings import WATER_PUMP_PIN, NUTRIENT_PUMP_PIN, PH_DOWNER_PUMP_PIN, MIXER_PUMP_PIN
 from settings import SAFETY_MODE_KEY
+from settings import logger
 from core.db import get_state
 
 digital_output_list = [
@@ -54,16 +54,20 @@ def apply_if_changed(
 
     if _callback_requirement != _state:
         board.digital[_pin].write(_callback[_key])
+        logger.info(f"Arduino pin {_pin_name}={_pin} changed to {_state}")
         return {
             "pin_name": _pin_name,
             "changed": True,
-            "state": _state
+            "state": _state,
+            "pin": _pin
         }
     else:
+        logger.debug(f"Arduino pin {_pin_name}={_pin} changed to {_state}")
         return {
             "pin_name": _pin_name,
             "changed": False,
-            "state": _state
+            "state": _state,
+            "pin": _pin
         }
 
 
@@ -81,17 +85,19 @@ def off_on_digital_output(board: ArduinoMega):
 
 
 def set_actuator_safe(board: ArduinoMega, force_safe: bool = False) -> None:
-    if force_safe:
-        print("[ERROR] FORCE Safe mod detected !")
-        for _, _pin, __ in digital_output_list:
-            while bool(board.digital[_pin].read()):
-                board.digital[_pin].write(0)
-                print(f"[ERROR] Set {_pin} off")
-
+    max_attempt = 10
     status = get_state()
-    if status[SAFETY_MODE_KEY]:
-        print("[ERROR] Safe mod detected !")
+    if status[SAFETY_MODE_KEY] or force_safe:
+        logger.error("Safe mod detected")
         for _, _pin, __ in digital_output_list:
+            cnt = 0
+            logger.error(f"Handling {__}={_pin}")
             while bool(board.digital[_pin].read()):
                 board.digital[_pin].write(0)
-                print(f"[ERROR] Set {_pin} off")
+                logger.error(f"Arduino setting {_pin=} > OFF")
+                cnt = +1
+                if cnt > max_attempt:
+                    logger.critical(f"Can not switch off {__}={_pin},  {max_attempt=} reached")
+                    break
+            else:
+                logger.debug(f"Handling {__}={_pin} already OFF")

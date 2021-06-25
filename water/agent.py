@@ -12,15 +12,17 @@ from core.utils import detect_arduino_usb_serial
 from settings import PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN
 from settings import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_SENSOR_TOPIC
 from settings import SAFETY_MODE_KEY
+from settings import logger
 from core.db import get_db, db_update_or_create
 
-print(f"[UART][INFO] Connecting Arduino Mega Board ...")
+
+logger.info(f"[UART][INFO] Connecting Arduino Mega Board ...")
 board = ArduinoMega(detect_arduino_usb_serial())
 it = util.Iterator(board)
 it.start()
 for pin in [PH_SENSOR_PIN, TDS_SENSOR_PIN, WATER_LEVEL_PIN, NUTRIENT_LEVEL, PH_DOWNER_LEVEL_PIN]:
     board.analog[pin].enable_reporting()
-print(f"[UART][OK] Connected to this board: {board}")
+logger.info(f"[UART][OK] Connected to this board: {board}")
 inputs = {}  # input dict for sensors values from arduino mega 2560
 
 db = get_db()
@@ -29,7 +31,7 @@ db_update_or_create(SAFETY_MODE_KEY, False)
 
 
 def on_connect(client, userdata, flags, rc):
-    print(f"[MQTT][OK] Connected to {MQTT_HOST=} / {MQTT_SENSOR_TOPIC}")
+    logger.info(f"[MQTT][OK] Connected to {MQTT_HOST=} / {MQTT_SENSOR_TOPIC}")
 
 
 def generate_influx_protocol(_sensor_dict: dict) -> str:
@@ -53,8 +55,12 @@ while True:
     # set actuator in safe mod
     try:
         mqtt_client.reconnect()
+        logger.debug("mqtt_client.reconnect() ok")
     except ConnectionRefusedError:
-        print("[MQTT][ERROR] Connection lost, setting actuator in safe mod")
+        logger.error(
+            "mqtt_client.reconnect() failed, "
+            "mqtt server can not be reached, calling set_actuator_safe"
+        )
         set_actuator_safe(board=board, force_safe=True)
 
     # Read sensors through firmata
@@ -69,8 +75,6 @@ while True:
     # if callback in timeout set safe mod while water controller is up
     set_actuator_safe(board=board)
     # apply pin UP/DOWN following water controller rule (safe mod check already in function)
-    r = list(off_on_digital_output(board=board))
-    for _ in r:
-        if _["changed"]:
-            print(_)
+    list(off_on_digital_output(board=board))
     time.sleep(0.5)
+    logger.debug("Main loop successfully executed")
