@@ -20,29 +20,12 @@
 #include "OGDisplay.h"
 #include "OGApiHandler.h"
 #include "OGIO.h"
-
-char *NODE_TYPE = "sprinkler";
-char *NODE_TAG = "orchid";
-bool CHECK_NODE_TAG_DUPLICATE = false;
-
-char *WIFI_SSID = "*";
-char *WIFI_PASSWORD = "*";
-
-char *API_GATEWAY_URL = "*";
-char *API_GATEWAY_BASIC_AUTH_USER = "";
-char *API_GATEWAY_BASIC_AUTH_PASSWORD = "";
-
-char *MQTT_SERVER = "*";
-int MQTT_PORT = 32500;
-char *MQTT_USER = "*";
-char *MQTT_PASSWORD = "*";
-char *SENSOR_TOPIC = "sprinkler/sensor";
-char *SENSOR_CONTROLLER = "sprinkler/controller";
+#include "Config.h"
 
 // ADC to MAX = 100% and ADC tp MIN = 0% calibration
 // Used for mapping
-int SOIL_MOISTURE_ADC_MAX = 2330;
-int SOIL_MOISTURE_ADC_MIN = 1390;
+int SOIL_MOISTURE_ADC_MAX = 3550;
+int SOIL_MOISTURE_ADC_MIN = 1830;
 
 // ensure NODE_TAG is unique , use CHECK_NODE_TAG_DUPLICATE = false to bypass
 bool registered = false;
