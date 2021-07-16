@@ -43,3 +43,8 @@ flash-uno-sonar: nano_sonar
 	cd nano_sonar && \
 	pio update && \
 	pio run -t  upload
+
+flash-water-screen: water_screen
+	cd water_screen && \
+	pio update && \
+	pio run -t upload
