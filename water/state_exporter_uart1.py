@@ -14,7 +14,7 @@ import time
 #  Gnd
 #  +5V
 #  +5V
-s = serial.Serial("/dev/ttyS1")
+s = serial.Serial("/dev/ttyS1", baudrate=57_600)
 
 while True:
     d = get_state()
