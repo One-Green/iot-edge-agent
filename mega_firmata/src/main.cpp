@@ -768,6 +768,8 @@ void setup()
 
   // to use a port other than Serial, such as Serial1 on an Arduino Leonardo or Mega,
   // Call begin(baud) on the alternate serial port and pass it to Firmata to begin like this:
+  // TODO: MEGA PRO Serial1 use Tx1 (pin 18) Rx2 (pin 19) (near RST/AREF)
+  // TODO: pyFirmata connexion ok, but Iterator + enable reporting return None
   // Serial1.begin(57600);
   // Firmata.begin(Serial1);
   // However do not do this if you are using SERIAL_MESSAGE
