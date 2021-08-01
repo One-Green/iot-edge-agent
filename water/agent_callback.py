@@ -24,6 +24,7 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, message):
+    logger.info("MQTT Message received")
     for k, v in json.loads(message.payload).items():
         db_update_or_create(k, v)
     db_update_or_create(CALLBACK_UPDATED_AT_KEY, datetime.now().isoformat())
