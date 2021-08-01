@@ -22,6 +22,9 @@ peewee_logger = logging.getLogger("peewee")
 peewee_logger.addHandler(logging.StreamHandler())
 peewee_logger.setLevel(logging.CRITICAL)
 
+# Orange Pi ESP32 watchdog
+ESP32_WATCH_WATCHDOG_TTY = "/dev/ttyS1"
+
 # ----- SAFETY ----- > watchdog.py
 CALLBACK_UPDATED_AT_KEY: str = (
     "callback_updated_at"  # key for last callback updated at datetime
