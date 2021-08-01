@@ -22,8 +22,12 @@ peewee_logger = logging.getLogger("peewee")
 peewee_logger.addHandler(logging.StreamHandler())
 peewee_logger.setLevel(logging.CRITICAL)
 
-# Orange Pi ESP32 watchdog
+# ESP32 watchdog - cut relay power supply if no alive received by ESP32
 ESP32_WATCH_WATCHDOG_TTY = "/dev/ttyS1"
+ALIVE_MESSAGE = {"message": "alive"}
+
+# ESP32 TFT display send JSON state - copy cat of pewee database to this ESP32
+ESP32_TFT_DISPLAY_TTY = "/dev/ttyS2"
 
 # ----- SAFETY ----- > watchdog.py
 CALLBACK_UPDATED_AT_KEY: str = (
@@ -33,7 +37,6 @@ SAFETY_MODE_KEY: str = "safety_mode"
 CALLBACK_MAX_TIME_DELTA: timedelta = timedelta(
     seconds=2, milliseconds=0
 )  # turn off all actuators if timedelta is higher than this config
-
 
 # ----- MQTT -----
 MQTT_HOST: str = os.getenv(
