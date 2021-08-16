@@ -2,7 +2,7 @@
 // Created by shanisma on 04/07/2021.
 //
 
-// Expands macro for comparision
+// Expands macro for comparison
 // see use below
 #define DO_EXPAND(VAL)  VAL ## 1
 #define EXPAND(VAL)     DO_EXPAND(VAL)
@@ -37,7 +37,7 @@
 
 
 // IMPORTANT: Rare case as it's neither int nor string
-// Uncomment below lines if you're sure you'll pass false or true ( without qoutes )
+// Uncomment below lines if you're sure you'll pass false or true ( without quotes )
 // #ifndef CHECK_NODE_TAG_DUPLICATE
 #define CHECK_NODE_TAG_DUPLICATE false
 // #endif
