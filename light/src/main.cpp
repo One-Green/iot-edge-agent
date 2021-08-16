@@ -32,6 +32,11 @@ OGApiHandler apiHandler;
 OGIO io_handler;
 
 bool last_light_signal = false;
+// information in JSON, callback topic CONTROLLER_TOPIC
+String tz;
+String on_time_at;
+String off_time_at;
+
 
 // Custom functions
 
@@ -77,8 +82,15 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 	deserializeJson(doc, messageTemp);
 	JsonObject obj = doc.as<JsonObject>();
 
+    // collect one-green core information
+    // https://arduinojson.org/v6/error/ambiguous-overload-for-operator-equal/
+    // use as<String>() to avoid ambiguous overload
+    tz = obj["tz"].as<String>();
+    on_time_at = obj["on_time_at"].as<String>();
+    off_time_at = obj["off_time_at"].as<String>();
+
 	String tag = obj[String("tag")];
-	bool light_signal = obj[String("water_valve_signal")];
+	bool light_signal = obj[("light_signal")];
 
 	if (tag == NODE_TAG) {
 		if (light_signal != last_light_signal) {
