@@ -55,4 +55,4 @@
 
 // MQTT TOPICS
 #define SENSOR_TOPIC "sprinkler/sensor"
-#define SENSOR_CONTROLLER "sprinkler/controller"
+#define CONTROLLER_TOPIC "sprinkler/controller"

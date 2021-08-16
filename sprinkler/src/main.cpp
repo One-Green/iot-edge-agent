@@ -58,7 +58,7 @@ void reconnect_mqtt() {
 		if (client.connect(clt_name_char, MQTT_USER, MQTT_PASSWORD)) {
 			Serial.println("[MQTT] Client connected");
 			// Subscribe
-			client.subscribe(SENSOR_CONTROLLER);
+			client.subscribe(CONTROLLER_TOPIC);
 		} else {
 			Serial.print("[MQTT] failed, rc=");
 			Serial.print(client.state());
