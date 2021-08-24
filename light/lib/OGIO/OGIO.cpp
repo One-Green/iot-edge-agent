@@ -6,13 +6,18 @@
 
 #include "Arduino.h"
 #include "OGIO.h"
+#include <Wire.h>
+#include <BH1750.h>
 
 #define LIGHT_RELAY_PIN 19
+
+BH1750 lightMeter(0x23);
 
 
 void OGIO::initR(char *nodeTag) {
 	OGIO::nodeTag = nodeTag;
 	pinMode(LIGHT_RELAY_PIN, OUTPUT);
+	Wire.begin();
 
 }
 
