@@ -20,6 +20,8 @@ const int SLAVE_ADDRESS = 2;
 enum
 {
 	CMD_IDLE                      = 0,
+
+  // Sensors repport commands
 	CMD_READ_PH                   = 1,
 	CMD_READ_TDS                  = 2,
 	CMD_READ_WATER_LVL            = 3,
@@ -38,7 +40,12 @@ enum
 	CMD_WRITE_LOW_PH_DOWNER_PUMP  = 13,
 	CMD_WRITE_HIGH_PH_DOWNER_PUMP = 14,
 
-	CMD_SAFE_MODE 			      = 15
+	CMD_READ_MIXER_PUMP           = 15,
+	CMD_WRITE_LOW_MIXER_PUMP      = 16,
+	CMD_WRITE_HIGH_MIXER_PUMP     = 17,
+
+	// safety actions 
+	CMD_SAFE_MODE 			      = 18
 };
 
 void sendCommand (const byte cmd, const int responseSize)
