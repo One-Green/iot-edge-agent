@@ -64,8 +64,41 @@ int OGIO::getPhDownerLevelCM() {
     return baseUltrasonicReader(pHDownerLevelTriggerPin, pHDownerLevelEchoPin);
 }
 
-float OGIO::getPhLevel() {
+float OGIO::getPhLevelRawADC(){
+    int samples = 10;
+    float adc_resolution = 1024.0;
+    int measurings = 0;
+    for (int i = 0; i < samples; i++) {
+        measurings += analogRead(pHSense);
+        delay(10);
+    }
+    float voltage = 5 / adc_resolution * measurings / samples;
+    return voltage;
+}
 
+float OGIO::getTDSRawADC(){
+ static unsigned long analogSampleTimepoint = millis();
+    if (millis() - analogSampleTimepoint > 40U) //every 40 milliseconds,read the analog value from the ADC
+    {
+        analogSampleTimepoint = millis();
+        analogBuffer[analogBufferIndex] = analogRead(TdsSensorPin); //read the analog value and store into the buffer
+        analogBufferIndex++;
+        if (analogBufferIndex == SCOUNT)
+            analogBufferIndex = 0;
+    }
+    static unsigned long printTimepoint = millis();
+    if (millis() - printTimepoint > 800U) {
+        printTimepoint = millis();
+        for (copyIndex = 0; copyIndex < SCOUNT; copyIndex++)
+            analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
+        averageVoltage = getMedianNum(analogBufferTemp, SCOUNT) * (float) VREF /
+                         1024.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
+    }
+    return averageVoltage;
+}
+
+float OGIO::getPhLevel()
+{
     int samples = 10;
     float adc_resolution = 1024.0;
     int measurings = 0;
@@ -113,9 +146,8 @@ float OGIO::getTDS() {
         Serial.println(tdsValue);
         return tdsValue;
     }
-
-
 }
+
 
 void OGIO::setWaterPump(uint8_t state) {
     digitalWrite(WaterPumpPin, state);

@@ -18,8 +18,11 @@ public:
     int getWaterLevelCM();
     int getNutrientLevelCM();
     int getPhDownerLevelCM();
-    float getPhLevel();
 
+    float getPhLevelRawADC();
+    float getTDSRawADC();
+
+    float getPhLevel();
     float getTDS();
     int analogBuffer[SCOUNT];
     int analogBufferTemp[SCOUNT];
