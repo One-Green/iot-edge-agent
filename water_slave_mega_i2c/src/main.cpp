@@ -45,7 +45,7 @@ enum
 	CMD_WRITE_HIGH_MIXER_PUMP     = 19,
 
 	// safety actions 
-	CMD_SAFE_MODE 			      = 20
+	CMD_SAFE_MODE 			          = 20
 };
 
 
@@ -84,6 +84,23 @@ void requestEvent ()
     case CMD_IDLE: 
       Wire.write(2); 
       Serial.println("I2C recived CMD_IDLE");
+      break;
+
+    case CMD_READ_PH_RAW_ADC:
+      Serial.print("I2C recived CMD_READ_PH_RAW_ADC, pH raw adc=");
+      val = io_handler.getPhLevelRawADC();    
+      Serial.println(val);
+      str.concat(val);
+      Wire.write(str.c_str());
+      break;  
+    
+    case CMD_READ_TDS_RAW_ADC:
+      Serial.print("I2C recived CMD_READ_TDS_RAW_ADC, tds raw adc=");
+      val = io_handler.getTDSRawADC();    
+      Serial.println(val);
+      str.concat(val);
+      Wire.write(str.c_str());
+      break;  
 
     case CMD_READ_PH: 
       Serial.print("I2C recived CMD_READ_PH, pH=");
@@ -216,7 +233,7 @@ void requestEvent ()
       Wire.write(bVal);
       break;
 
-      case CMD_WRITE_SAFE_MODE:
+      case CMD_SAFE_MODE:
       Serial.print("I2C recived CMD_WRITE_SAFE_MODE");
       io_handler.setWaterPump(0);
       io_handler.setNutrientPump(0);
