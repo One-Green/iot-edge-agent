@@ -20,31 +20,34 @@ enum
 	CMD_IDLE                      = 0,
 
   // Sensors repport commands
-	CMD_READ_PH                    = 1,
-	CMD_READ_TDS                   = 2,
-	CMD_READ_WATER_LVL             = 3,
-	CMD_READ_NUTRIENT_LVL          = 4,
-	CMD_READ_PH_LVL                = 5,
+	CMD_READ_PH_RAW_ADC           = 1,
+	CMD_READ_TDS_RAW_ADC          = 2,
+	CMD_READ_PH                   = 3,
+	CMD_READ_TDS                  = 4,
+	CMD_READ_WATER_LVL            = 5,
+	CMD_READ_NUTRIENT_LVL         = 6,
+	CMD_READ_PH_LVL               = 7,
 
-	CMD_READ_WATER_PUMP            = 6,
-	CMD_WRITE_LOW_WATER_PUMP       = 7,
-	CMD_WRITE_HIGH_WATER_PUMP      = 8,
+	CMD_READ_WATER_PUMP           = 8,
+	CMD_WRITE_LOW_WATER_PUMP      = 9,
+	CMD_WRITE_HIGH_WATER_PUMP     = 10,
 	
-	CMD_READ_NUTRIENT_PUMP         = 9,
-	CMD_WRITE_LOW_NUTRIENT_PUMP    = 10,
-	CMD_WRITE_HIGH_NUTRIENT_PUMP   = 11,
+	CMD_READ_NUTRIENT_PUMP        = 11,
+	CMD_WRITE_LOW_NUTRIENT_PUMP   = 12,
+	CMD_WRITE_HIGH_NUTRIENT_PUMP  = 13,
 
-	CMD_READ_PH_DOWNER_PUMP        = 12,
-	CMD_WRITE_LOW_PH_DOWNER_PUMP   = 13,
-	CMD_WRITE_HIGH_PH_DOWNER_PUMP  = 14,
+	CMD_READ_PH_DOWNER_PUMP       = 14,
+	CMD_WRITE_LOW_PH_DOWNER_PUMP  = 15,
+	CMD_WRITE_HIGH_PH_DOWNER_PUMP = 16,
 
-  CMD_READ_MIXER_PUMP            = 15,
-  CMD_WRITE_LOW_MIXER_PUMP       = 16,
-  CMD_WRITE_HIGH_MIXER_PUMP      = 17,
+	CMD_READ_MIXER_PUMP           = 17,
+	CMD_WRITE_LOW_MIXER_PUMP      = 18,
+	CMD_WRITE_HIGH_MIXER_PUMP     = 19,
 
-  // safety actions 
-	CMD_WRITE_SAFE_MODE 			     = 18
+	// safety actions 
+	CMD_SAFE_MODE 			      = 20
 };
+
 
 
 void I2CwriteSensor(const byte which)
