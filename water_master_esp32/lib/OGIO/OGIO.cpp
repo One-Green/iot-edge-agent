@@ -63,9 +63,9 @@ void OGIO::sendCommand(const byte cmd, const int responseSize)
 {
 	Serial.print("I2C send command >");
 	Serial.println(cmd);
-	Wire.beginTransmission (SLAVE_ADDRESS);
+	Wire.beginTransmission(SLAVE_ADDRESS);
 	Wire.write (cmd);
-	Wire.endTransmission ();
+	Wire.endTransmission();
 	Wire.requestFrom(SLAVE_ADDRESS, responseSize);  
 } 
   
@@ -114,11 +114,11 @@ float OGIO::readFloat(const byte cmd)
 
 }
 
-int OGIO::readByte(const byte cmd)
+byte OGIO::readByte(byte cmd)
 {
 	int val;
 	OGIO::sendCommand(cmd, 1);
-	val = Wire.read ();
+	val = Wire.read();
 	return val;
 }
 
@@ -134,13 +134,11 @@ float OGIO::getTDSRawADC()
 	return OGIO::TDSRawADC;
 }
 
-
 float OGIO::getPhLevel()
 {
 	OGIO::pH = OGIO::readFloat(CMD_READ_PH);
 	return OGIO::pH;
 }
-
 
 float OGIO::getTDS()
 {
@@ -168,7 +166,8 @@ int OGIO::getPhDownerLevelCM()
 }
 
 
-String OGIO::generateInfluxLineProtocol() {
+String OGIO::generateInfluxLineProtocol()
+{
 	
 	// read value and save as attibute
 	this->getPhLevelRawADC();
@@ -192,5 +191,89 @@ String OGIO::generateInfluxLineProtocol() {
 			+ "ph_downer_tk_lvl=" + String(OGIO::PHTankLevel)+"i";			// real level in cm
 	return lineProtoStr ;
 }
+
+// Water pump methods
+byte OGIO::OnWaterPump()
+{
+	OGIO::WaterPumpStatus = OGIO::readByte(CMD_WRITE_HIGH_WATER_PUMP);
+	return OGIO::WaterPumpStatus;
+}
+
+byte OGIO::OffWaterPump()
+{
+	OGIO::WaterPumpStatus = OGIO::readByte(CMD_WRITE_LOW_WATER_PUMP);
+	return OGIO::WaterPumpStatus;
+}
+
+byte OGIO::getWaterPumpStatus()
+{
+	OGIO::WaterPumpStatus = OGIO::readByte(CMD_READ_WATER_PUMP);
+	return OGIO::WaterPumpStatus;
+}
+
+// Nutirent pump methods
+byte OGIO::OnNutrientPump()
+{
+	OGIO::NutrientPumpStatus = OGIO::readByte(CMD_WRITE_HIGH_NUTRIENT_PUMP);
+	return OGIO::NutrientPumpStatus;
+}
+
+byte OGIO::OffNutrientPump()
+{
+	OGIO::NutrientPumpStatus = OGIO::readByte(CMD_WRITE_LOW_NUTRIENT_PUMP);
+	return OGIO::NutrientPumpStatus;
+}
+
+byte OGIO::getNutrientPumpStatus()
+{
+	OGIO::NutrientPumpStatus = OGIO::readByte(CMD_READ_NUTRIENT_PUMP);
+	return OGIO::NutrientPumpStatus;
+}
+
+// Ph downer pump methods
+byte OGIO::OnPhDownerPump()
+{
+	OGIO::PhDownerPumpSatus = OGIO::readByte(CMD_WRITE_HIGH_PH_DOWNER_PUMP);
+	return OGIO::PhDownerPumpSatus;
+}
+
+byte OGIO::OffPhDownerPump()
+{
+	OGIO::PhDownerPumpSatus = OGIO::readByte(CMD_WRITE_LOW_PH_DOWNER_PUMP);
+	return OGIO::PhDownerPumpSatus;
+}
+
+byte OGIO::getPhDownerPumpStatus()
+{
+	OGIO::PhDownerPumpSatus = OGIO::readByte(CMD_READ_PH_DOWNER_PUMP);
+	return OGIO::PhDownerPumpSatus;
+}
+
+// mixer pump methods
+byte OGIO::OnMixerPump()
+{
+	OGIO::MixerPumpStatus = OGIO::readByte(CMD_WRITE_HIGH_MIXER_PUMP);
+	return OGIO::MixerPumpStatus;
+}
+
+byte OGIO::OffMixerPump()
+{
+	OGIO::MixerPumpStatus = OGIO::readByte(CMD_WRITE_LOW_MIXER_PUMP);
+	return OGIO::MixerPumpStatus;
+}
+
+byte OGIO::getMixerPumpStatus()
+{
+	OGIO::MixerPumpStatus = OGIO::readByte(CMD_READ_MIXER_PUMP);
+	return OGIO::MixerPumpStatus;
+}
+
+byte OGIO::safeMode()
+{
+	OGIO::safeModeStatus = OGIO::readByte(CMD_SAFE_MODE);
+	return OGIO::safeModeStatus;
+}
+
+
 
 OGIO io_handler;

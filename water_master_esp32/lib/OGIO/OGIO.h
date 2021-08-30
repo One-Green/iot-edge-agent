@@ -9,7 +9,7 @@ private:
 	int readInt(const byte cmd);
 	void flushI2C();
 	float readFloat(const byte cmd);
-	int readByte(const byte cmd);
+	byte readByte(const byte cmd);
 
 public:
 
@@ -36,7 +36,15 @@ public:
 	int getNutrientLevelCM();
 	int getPhDownerLevelCM();
 
-	byte OnWatrPump();
+	String generateInfluxLineProtocol();
+	
+	// actuators methods 
+	byte WaterPumpStatus;
+	byte NutrientPumpStatus;
+	byte PhDownerPumpSatus;
+	byte MixerPumpStatus; 
+
+	byte OnWaterPump();
 	byte OffWaterPump();
 	byte getWaterPumpStatus();
 
@@ -47,14 +55,14 @@ public:
 	byte OnPhDownerPump();
 	byte OffPhDownerPump();
 	byte getPhDownerPumpStatus();
-
+	
 	byte OnMixerPump();
 	byte OffMixerPump();
 	byte getMixerPumpStatus();
 
-	String generateInfluxLineProtocol();
-
-
+	// safe mode att , methods
+	byte safeModeStatus;
+	byte safeMode();
 };
 
 extern OGIO io_handler;
