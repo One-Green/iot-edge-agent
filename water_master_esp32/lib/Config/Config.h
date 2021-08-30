@@ -32,7 +32,7 @@
 // #define API_GATEWAY_BASIC_AUTH_USER ""
 // #define API_GATEWAY_BASIC_AUTH_PASSWORD ""
 // REGISTER TAG TO CORE
-// #define NODE_TAG ""
+#define NODE_TAG "not-scalable"
 
 
 

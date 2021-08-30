@@ -1,33 +1,60 @@
 //
-// Created by jkl on 02/11/2020.
+// Created by shan on 26/08/2021.
 //
-
-#ifndef NODE_SPRINKLER_ARDUINO_OGIO_H
-#define NODE_SPRINKLER_ARDUINO_OGIO_H
-
 
 class OGIO {
 
+private:
+	void sendCommand(const byte cmd, const int responseSize);
+	int readInt(const byte cmd);
+	void flushI2C();
+	float readFloat(const byte cmd);
+	int readByte(const byte cmd);
+
 public:
 
+	char *nodeTag;
+	float pHRawADC;
+	float TDSRawADC;
+	float pH;
+	float TDS;
+	int WaterTankLevel;
+	int PHTankLevel;
+	int NutrientTankLevel;
+	String lineProtoStr; // formatted metrics for influx db line protocol 
 
 	void initR(char *nodeTag);
 
-	float getMoistureLevelADC();
+	// sensors reading 
+	float getPhLevelRawADC();
+	float getTDSRawADC();
 
-	float getMoistureLevel(float in_min, float in_max, float out_min, float out_max);
+	float getPhLevel();	
+	float getTDS();
 
-	void openWaterValve();
+	int getWaterLevelCM();
+	int getNutrientLevelCM();
+	int getPhDownerLevelCM();
 
-	void closeWaterValve();
+	byte OnWatrPump();
+	byte OffWaterPump();
+	byte getWaterPumpStatus();
+
+	byte OnNutrientPump();
+	byte OffNutrientPump();
+	byte getNutrientPumpStatus();
+
+	byte OnPhDownerPump();
+	byte OffPhDownerPump();
+	byte getPhDownerPumpStatus();
+
+	byte OnMixerPump();
+	byte OffMixerPump();
+	byte getMixerPumpStatus();
 
 	String generateInfluxLineProtocol();
 
-	char *nodeTag;
-	float soilMoistureADC;
-	float soilMoisture;
 
 };
 
-
-#endif //NODE_SPRINKLER_ARDUINO_OGIO_H
+extern OGIO io_handler;
