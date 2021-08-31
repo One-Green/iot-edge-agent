@@ -12,7 +12,6 @@ private:
 	byte readByte(const byte cmd);
 
 public:
-
 	char *nodeTag;
 	float pHRawADC;
 	float TDSRawADC;
@@ -22,6 +21,8 @@ public:
 	int PHTankLevel;
 	int NutrientTankLevel;
 	String lineProtoStr; // formatted metrics for influx db line protocol 
+
+	byte sendIdle();
 
 	void initR(char *nodeTag);
 

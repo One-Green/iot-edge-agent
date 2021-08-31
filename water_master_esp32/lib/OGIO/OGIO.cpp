@@ -47,7 +47,7 @@ enum
 void OGIO::initR(char *nodeTag) 
 {
 	OGIO::nodeTag = NODE_TAG;
-	Wire.begin ();   
+	Wire.begin();   
 	OGIO::sendCommand(CMD_IDLE, 1);
 	if (Wire.available ())
 	{
@@ -61,8 +61,9 @@ void OGIO::initR(char *nodeTag)
 
 void OGIO::sendCommand(const byte cmd, const int responseSize)
 {
-	Serial.print("I2C send command >");
-	Serial.println(cmd);
+	Serial.print("I2C send command [");
+	Serial.print(cmd);
+	Serial.println("]");
 	Wire.beginTransmission(SLAVE_ADDRESS);
 	Wire.write (cmd);
 	Wire.endTransmission();
@@ -122,15 +123,16 @@ byte OGIO::readByte(byte cmd)
 	return val;
 }
 
+// Public methods 
 float OGIO::getPhLevelRawADC()
 {
-	OGIO::pHRawADC = OGIO::readInt(CMD_READ_PH);
+	OGIO::pHRawADC = OGIO::readFloat(CMD_READ_PH_RAW_ADC);
 	return OGIO::pHRawADC;
 }
 
 float OGIO::getTDSRawADC()
 {
-	OGIO::TDSRawADC = OGIO::readInt(CMD_READ_TDS);
+	OGIO::TDSRawADC = OGIO::readFloat(CMD_READ_TDS_RAW_ADC);
 	return OGIO::TDSRawADC;
 }
 
@@ -274,6 +276,9 @@ byte OGIO::safeMode()
 	return OGIO::safeModeStatus;
 }
 
-
+byte OGIO::sendIdle()
+{
+	return OGIO::readByte(CMD_IDLE);
+}
 
 OGIO io_handler;
