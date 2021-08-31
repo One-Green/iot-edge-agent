@@ -81,20 +81,20 @@ float OGIO::getTDSRawADC(){
     if (millis() - analogSampleTimepoint > 40U) //every 40 milliseconds,read the analog value from the ADC
     {
         analogSampleTimepoint = millis();
-        analogBuffer[analogBufferIndex] = analogRead(TdsSensorPin); //read the analog value and store into the buffer
-        analogBufferIndex++;
-        if (analogBufferIndex == SCOUNT)
-            analogBufferIndex = 0;
+        OGIO::analogBuffer[analogBufferIndex] = analogRead(TdsSensorPin); //read the analog value and store into the buffer
+        OGIO::analogBufferIndex++;
+        if (OGIO::analogBufferIndex == SCOUNT)
+            OGIO::analogBufferIndex = 0;
     }
     static unsigned long printTimepoint = millis();
     if (millis() - printTimepoint > 800U) {
         printTimepoint = millis();
-        for (copyIndex = 0; copyIndex < SCOUNT; copyIndex++)
-            analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
-        averageVoltage = getMedianNum(analogBufferTemp, SCOUNT) * (float) VREF /
+        for (OGIO::copyIndex = 0; OGIO::copyIndex < SCOUNT; OGIO::copyIndex++)
+            OGIO::analogBufferTemp[OGIO::copyIndex] = OGIO::analogBuffer[OGIO::copyIndex];
+        OGIO::averageVoltage = getMedianNum(OGIO::analogBufferTemp, SCOUNT) * (float) VREF /
                          1024.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
     }
-    return averageVoltage;
+    return OGIO::averageVoltage;
 }
 
 float OGIO::getPhLevel()
@@ -117,35 +117,20 @@ float OGIO::getTDS() {
      *  source https://wiki.keyestudio.com/KS0429_keyestudio_TDS_Meter_V1.0
      *
      * */
-    static unsigned long analogSampleTimepoint = millis();
-    if (millis() - analogSampleTimepoint > 40U) //every 40 milliseconds,read the analog value from the ADC
-    {
-        analogSampleTimepoint = millis();
-        analogBuffer[analogBufferIndex] = analogRead(TdsSensorPin); //read the analog value and store into the buffer
-        analogBufferIndex++;
-        if (analogBufferIndex == SCOUNT)
-            analogBufferIndex = 0;
-    }
-    static unsigned long printTimepoint = millis();
-    if (millis() - printTimepoint > 800U) {
-        printTimepoint = millis();
-        for (copyIndex = 0; copyIndex < SCOUNT; copyIndex++)
-            analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
-        averageVoltage = getMedianNum(analogBufferTemp, SCOUNT) * (float) VREF /
-                         1024.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
 
-        float compensationCoefficient = 1.0 + 0.02 * (temperature -
-                                                      25.0); //temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
-        float compensationVoltage = averageVoltage / compensationCoefficient; //temperature compensation
-        tdsValue = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage -
-                    255.86 * compensationVoltage * compensationVoltage + 857.39 * compensationVoltage) *
-                   0.5; //convert voltage value to tds value
-                // Serial.print("TDS Value:");
-                // Serial.print(tdsValue, 0);
-                // Serial.println("ppm");
-        Serial.println(tdsValue);
-        return tdsValue;
-    }
+    float compensationCoefficient = 1.0 + 0.02 * (temperature -
+                                                    25.0); //temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
+    
+    float compensationVoltage = OGIO::averageVoltage / compensationCoefficient; //temperature compensation
+    
+    float tdsValue = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage -
+                255.86 * compensationVoltage * compensationVoltage + 857.39 * compensationVoltage) *
+                0.5; //convert voltage value to tds value
+    // Serial.print("TDS Value:");
+    // Serial.print(tdsValue, 0);
+    // Serial.println("ppm");
+    Serial.println(tdsValue);
+    return tdsValue;
 }
 
 
