@@ -313,27 +313,34 @@ void setup() {
     Serial.begin(9600);
     Serial.println("Serial Begin OK");
 
+    io_handler.initR(NODE_TAG);
+    io_handler.getWaterLevelCM();
+
     // Display Init
-    displayLib.initR();
-    displayLib.initWifi();
+    // displayLib.initR();
+    // displayLib.initWifi();
 
     // Connect to WiFi 
-    connectToWiFiNetwork();
+    // connectToWiFiNetwork();
 
     // Display WiFi Info
-    displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
-    displayLib.printTemplate();
+    // displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
+    // displayLib.printTemplate();
 
     /* MQTT connexion */
-    client.setServer(MQTT_SERVER, MQTT_PORT);
-    client.setCallback(mqttCallback);
+    // client.setServer(MQTT_SERVER, MQTT_PORT);
+    // client.setCallback(mqttCallback);
 
     /* Init MQTT Pub Sensor Timer */
-    pubSensorTimer = millis();
+    // pubSensorTimer = millis();
 }
 
 
 void loop() {
+
+    // WIP I2C ISSUE
+    delay(1000000);
+    // WIP I2C ISSUE
 
     //reconnect MQTT Client if not connected
     if (!client.connected()) {
