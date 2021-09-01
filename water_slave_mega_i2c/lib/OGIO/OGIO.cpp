@@ -52,15 +52,15 @@ void OGIO::initR() {
 }
 
 
-int OGIO::getWaterLevelCM() {
+float OGIO::getWaterLevelCM() {
     return baseUltrasonicReader(WaterLevelTriggerPin, WaterLevelEchoPin);
 }
 
-int OGIO::getNutrientLevelCM() {
+float OGIO::getNutrientLevelCM() {
     return baseUltrasonicReader(NutrientLevelTriggerPin, NutrientLevelEchoPin);
 }
 
-int OGIO::getPhDownerLevelCM() {
+float OGIO::getPhDownerLevelCM() {
     return baseUltrasonicReader(pHDownerLevelTriggerPin, pHDownerLevelEchoPin);
 }
 
@@ -193,9 +193,9 @@ int OGIO::getMedianNum(int bArray[], int iFilterLen) {
     return bTemp;
 }
 
-int OGIO::baseUltrasonicReader(int trigger, int echo) {
+float OGIO::baseUltrasonicReader(int trigger, int echo) {
     long duration;
-    int distance;
+    float distance;
     // Clear the trigPin by setting it LOW:
     digitalWrite(trigger, LOW);
     delayMicroseconds(5);

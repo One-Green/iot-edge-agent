@@ -15,13 +15,13 @@ public:
 
     void initR();
 
-    int getWaterLevelCM();
-    int getNutrientLevelCM();
-    int getPhDownerLevelCM();
+    float getWaterLevelCM();
+    float getNutrientLevelCM();
+    float getPhDownerLevelCM();
 
     float getPhLevelRawADC();
     float getTDSRawADC();
-
+    
     float getPhLevel();
     float getTDS();
     int analogBuffer[SCOUNT];
@@ -40,7 +40,7 @@ public:
     int getMixerPumpStatus();
 
     int getMedianNum(int bArray[], int iFilterLen);
-    int baseUltrasonicReader(int trigger, int echo);
+    float baseUltrasonicReader(int trigger, int echo);
 };
 
 extern OGIO io_handler;

@@ -120,25 +120,28 @@ void requestEvent ()
     
     case CMD_READ_WATER_LVL:
       Serial.print("I2C recived CMD_READ_WATER_LVL, lvl=");
-      intVal = io_handler.getWaterLevelCM();
-      Serial.print(val);
-      I2CwriteInteger(intVal);
-      break;  
+      val = io_handler.getWaterLevelCM();
+      Serial.println(val);
+      str.concat(val);
+      Wire.write(str.c_str());
+      break;   
     
     case CMD_READ_NUTRIENT_LVL:
       Serial.print("I2C recived CMD_READ_NUTRIENT_LVL, lvl=");
-      intVal = io_handler.getNutrientLevelCM();
-      Serial.print(val);
-      I2CwriteInteger(intVal);
+      val = io_handler.getNutrientLevelCM();
+      Serial.println(val);
+      str.concat(val);
+      Wire.write(str.c_str());
       break;  
 
     case CMD_READ_PH_LVL:
       Serial.print("I2C recived CMD_READ_PH_LVL, lvl=");
       intVal = io_handler.getPhDownerLevelCM();
-      Serial.print(val);
-      I2CwriteInteger(intVal);
+      Serial.println(val);
+      str.concat(val);
+      Wire.write(str.c_str());
       break;  
-    
+
     // ------------------- water pump cases 
     case CMD_READ_WATER_PUMP:
       Serial.print("I2C recived CMD_READ_WATER_PUMP, state=");
@@ -217,7 +220,7 @@ void requestEvent ()
       Wire.write(bVal);
       break;
     
-      case CMD_WRITE_LOW_MIXER_PUMP:
+    case CMD_WRITE_LOW_MIXER_PUMP:
       Serial.print("I2C recived CMD_WRITE_LOW_MIXER_PUMP, state=");
       io_handler.setMixerPump(0);
       bVal = io_handler.getMixerPumpStatus();
@@ -225,7 +228,7 @@ void requestEvent ()
       Wire.write(bVal);
       break;
 
-      case CMD_WRITE_HIGH_MIXER_PUMP:
+    case CMD_WRITE_HIGH_MIXER_PUMP:
       Serial.print("I2C recived CMD_WRITE_HIGH_MIXER_PUMP, state=");
       io_handler.setMixerPump(1);
       bVal = io_handler.getMixerPumpStatus();
@@ -233,12 +236,13 @@ void requestEvent ()
       Wire.write(bVal);
       break;
 
-      case CMD_SAFE_MODE:
+    case CMD_SAFE_MODE:
       Serial.print("I2C recived CMD_WRITE_SAFE_MODE");
       io_handler.setWaterPump(0);
       io_handler.setNutrientPump(0);
       io_handler.setPHDownerPump(0);
       io_handler.setMixerPump(0);
+      Wire.write(1);                      // send ack recived command, do pumps status on esp32 
       break;
   }
 }  

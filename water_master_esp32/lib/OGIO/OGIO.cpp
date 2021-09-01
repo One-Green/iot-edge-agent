@@ -47,7 +47,7 @@ enum
 void OGIO::initR(char *nodeTag) 
 {
 	OGIO::nodeTag = NODE_TAG;
-	Wire.begin();   
+	Wire.begin ();   
 	OGIO::sendCommand(CMD_IDLE, 1);
 	if (Wire.available ())
 	{
@@ -61,9 +61,8 @@ void OGIO::initR(char *nodeTag)
 
 void OGIO::sendCommand(const byte cmd, const int responseSize)
 {
-	Serial.print("I2C send command [");
-	Serial.print(cmd);
-	Serial.println("]");
+	Serial.print("I2C send command >");
+	Serial.println(cmd);
 	Wire.beginTransmission(SLAVE_ADDRESS);
 	Wire.write (cmd);
 	Wire.endTransmission();
@@ -123,16 +122,15 @@ byte OGIO::readByte(byte cmd)
 	return val;
 }
 
-// Public methods 
 float OGIO::getPhLevelRawADC()
 {
-	OGIO::pHRawADC = OGIO::readFloat(CMD_READ_PH_RAW_ADC);
+	OGIO::pHRawADC = OGIO::readInt(CMD_READ_PH);
 	return OGIO::pHRawADC;
 }
 
 float OGIO::getTDSRawADC()
 {
-	OGIO::TDSRawADC = OGIO::readFloat(CMD_READ_TDS_RAW_ADC);
+	OGIO::TDSRawADC = OGIO::readInt(CMD_READ_TDS);
 	return OGIO::TDSRawADC;
 }
 
@@ -184,8 +182,8 @@ String OGIO::generateInfluxLineProtocol()
 
 	String lineProtoStr =
 			"water,tag=" + String(nodeTag)
-			+ " ph_raw_ad=" + String(OGIO::pHRawADC)+","    				// raw adc 
-			+ "tds_raw_adc=" + String(OGIO::TDSRawADC)+","; 				// raw adc
+			+ " ph_voltage=" + String(OGIO::pHRawADC)+","    				// raw adc 
+			+ "tds_voltage=" + String(OGIO::TDSRawADC)+","; 				// raw adc
 			+ "ph=" + String(OGIO::pH)+",";                 				// real value
 			+ "tds=" + String(OGIO::TDS)+",";								// real value
 			+ "water_tk_lvl=" + String(OGIO::WaterTankLevel)+"i,"; 			// real level in cm
@@ -276,9 +274,6 @@ byte OGIO::safeMode()
 	return OGIO::safeModeStatus;
 }
 
-byte OGIO::sendIdle()
-{
-	return OGIO::readByte(CMD_IDLE);
-}
+
 
 OGIO io_handler;
