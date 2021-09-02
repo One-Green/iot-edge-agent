@@ -19,7 +19,7 @@ enum
 {
 	CMD_IDLE                      = 0,
 
-  // Sensors repport commands
+  // Sensors report commands
 	CMD_READ_PH_RAW_ADC           = 1,
 	CMD_READ_TDS_RAW_ADC          = 2,
 	CMD_READ_PH                   = 3,
@@ -83,11 +83,11 @@ void requestEvent ()
   {
     case CMD_IDLE: 
       Wire.write(2); 
-      Serial.println("I2C recived CMD_IDLE");
+      Serial.println("I2C received CMD_IDLE");
       break;
 
     case CMD_READ_PH_RAW_ADC:
-      Serial.print("I2C recived CMD_READ_PH_RAW_ADC, pH raw adc=");
+      Serial.print("I2C received CMD_READ_PH_RAW_ADC, pH raw adc=");
       val = io_handler.getPhLevelRawADC();    
       Serial.println(val);
       str.concat(val);
@@ -95,7 +95,7 @@ void requestEvent ()
       break;  
     
     case CMD_READ_TDS_RAW_ADC:
-      Serial.print("I2C recived CMD_READ_TDS_RAW_ADC, tds raw adc=");
+      Serial.print("I2C received CMD_READ_TDS_RAW_ADC, tds raw adc=");
       val = io_handler.getTDSRawADC();    
       Serial.println(val);
       str.concat(val);
@@ -103,7 +103,7 @@ void requestEvent ()
       break;  
 
     case CMD_READ_PH: 
-      Serial.print("I2C recived CMD_READ_PH, pH=");
+      Serial.print("I2C received CMD_READ_PH, pH=");
       val = io_handler.getPhLevel();    
       Serial.println(val);
       str.concat(val);
@@ -111,7 +111,7 @@ void requestEvent ()
       break;  
 
     case CMD_READ_TDS:
-      Serial.print("I2C recived CMD_READ_TDS, tds=");
+      Serial.print("I2C received CMD_READ_TDS, tds=");
       val = io_handler.getTDS();    
       Serial.println(val);
       str.concat(val);
@@ -119,7 +119,7 @@ void requestEvent ()
       break;  
     
     case CMD_READ_WATER_LVL:
-      Serial.print("I2C recived CMD_READ_WATER_LVL, lvl=");
+      Serial.print("I2C received CMD_READ_WATER_LVL, lvl=");
       val = io_handler.getWaterLevelCM();
       Serial.println(val);
       str.concat(val);
@@ -127,7 +127,7 @@ void requestEvent ()
       break;
     
     case CMD_READ_NUTRIENT_LVL:
-      Serial.print("I2C recived CMD_READ_NUTRIENT_LVL, lvl=");
+      Serial.print("I2C received CMD_READ_NUTRIENT_LVL, lvl=");
       val = io_handler.getNutrientLevelCM();
       Serial.println(val);
       str.concat(val);
@@ -135,7 +135,7 @@ void requestEvent ()
       break;  
 
     case CMD_READ_PH_LVL:
-      Serial.print("I2C recived CMD_READ_PH_LVL, lvl=");
+      Serial.print("I2C received CMD_READ_PH_LVL, lvl=");
       val = io_handler.getPhDownerLevelCM();
       Serial.println(val);
       str.concat(val);
@@ -144,14 +144,14 @@ void requestEvent ()
 
     // ------------------- water pump cases 
     case CMD_READ_WATER_PUMP:
-      Serial.print("I2C recived CMD_READ_WATER_PUMP, state=");
+      Serial.print("I2C received CMD_READ_WATER_PUMP, state=");
       bVal = io_handler.getWaterPumpStatus();
       Serial.print(bVal);
       Wire.write(bVal);
       break;
     
     case CMD_WRITE_LOW_WATER_PUMP:
-      Serial.print("I2C recived CMD_WRITE_LOW_WATER_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_LOW_WATER_PUMP, state=");
       io_handler.setWaterPump(0);
       bVal = io_handler.getWaterPumpStatus();
       Serial.print(bVal);      
@@ -159,7 +159,7 @@ void requestEvent ()
       break;
 
     case CMD_WRITE_HIGH_WATER_PUMP:
-      Serial.print("I2C recived CMD_WRITE_HIGH_WATER_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_HIGH_WATER_PUMP, state=");
       io_handler.setWaterPump(1);
       bVal = io_handler.getWaterPumpStatus();
       Serial.print(bVal);      
@@ -168,21 +168,21 @@ void requestEvent ()
 
     // ------------------- nutrient pump cases
     case CMD_READ_NUTRIENT_PUMP:
-      Serial.print("I2C recived CMD_READ_NUTRIENT_PUMP, state=");
+      Serial.print("I2C received CMD_READ_NUTRIENT_PUMP, state=");
       bVal = io_handler.getNutrientPumpStatus();
       Serial.print(bVal);
       Wire.write(bVal);
       break;
     
     case CMD_WRITE_LOW_NUTRIENT_PUMP:
-      Serial.print("I2C recived CMD_WRITE_LOW_NUTRIENT_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_LOW_NUTRIENT_PUMP, state=");
       io_handler.setNutrientPump(0);
       bVal = io_handler.getNutrientPumpStatus();
       Serial.print(bVal);
       break;
     
     case CMD_WRITE_HIGH_NUTRIENT_PUMP:
-      Serial.print("I2C recived CMD_WRITE_HIGH_NUTRIENT_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_HIGH_NUTRIENT_PUMP, state=");
       io_handler.setNutrientPump(1);
       bVal = io_handler.getNutrientPumpStatus();
       Serial.print(bVal);
@@ -190,14 +190,14 @@ void requestEvent ()
 
     // -------------------  ph downer pump cases
     case CMD_READ_PH_DOWNER_PUMP:
-      Serial.print("I2C recived CMD_READ_PH_DOWNER_PUMP, state=");
+      Serial.print("I2C received CMD_READ_PH_DOWNER_PUMP, state=");
       bVal = io_handler.getPhDownerPumpStatus();
       Serial.print(bVal);
       Wire.write(bVal);
       break;
 
     case CMD_WRITE_LOW_PH_DOWNER_PUMP:
-      Serial.print("I2C recived CMD_WRITE_LOW_PH_DOWNER_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_LOW_PH_DOWNER_PUMP, state=");
       io_handler.setPHDownerPump(0);
       bVal = io_handler.getPhDownerPumpStatus();
       Serial.print(bVal);
@@ -205,7 +205,7 @@ void requestEvent ()
       break;
 
     case CMD_WRITE_HIGH_PH_DOWNER_PUMP:
-      Serial.print("I2C recived CMD_WRITE_HIGH_PH_DOWNER_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_HIGH_PH_DOWNER_PUMP, state=");
       io_handler.setPHDownerPump(1);
       bVal = io_handler.getPhDownerPumpStatus();
       Serial.print(bVal);
@@ -214,14 +214,14 @@ void requestEvent ()
 
     // ------------------- mixer pump cases
     case CMD_READ_MIXER_PUMP:
-      Serial.print("I2C recived CMD_WRITE_LOW_PH_DOWNER_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_LOW_PH_DOWNER_PUMP, state=");
       bVal = io_handler.getMixerPumpStatus();
       Serial.print(bVal);
       Wire.write(bVal);
       break;
     
     case CMD_WRITE_LOW_MIXER_PUMP:
-      Serial.print("I2C recived CMD_WRITE_LOW_MIXER_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_LOW_MIXER_PUMP, state=");
       io_handler.setMixerPump(0);
       bVal = io_handler.getMixerPumpStatus();
       Serial.print(bVal);
@@ -229,7 +229,7 @@ void requestEvent ()
       break;
 
     case CMD_WRITE_HIGH_MIXER_PUMP:
-      Serial.print("I2C recived CMD_WRITE_HIGH_MIXER_PUMP, state=");
+      Serial.print("I2C received CMD_WRITE_HIGH_MIXER_PUMP, state=");
       io_handler.setMixerPump(1);
       bVal = io_handler.getMixerPumpStatus();
       Serial.print(bVal);
@@ -237,12 +237,12 @@ void requestEvent ()
       break;
 
     case CMD_SAFE_MODE:
-      Serial.print("I2C recived CMD_WRITE_SAFE_MODE");
+      Serial.print("I2C received CMD_WRITE_SAFE_MODE");
       io_handler.setWaterPump(0);
       io_handler.setNutrientPump(0);
       io_handler.setPHDownerPump(0);
       io_handler.setMixerPump(0);
-      Wire.write(1);                      // send ack recived command, do pumps status on esp32
+      Wire.write(1);                      // send ack received command, do pumps status on esp32
       break;
   }
 }  
