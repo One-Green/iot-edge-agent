@@ -49,12 +49,12 @@ flash-water-screen: water_screen
 	pio update && \
 	pio run -t upload
 
-flash-water-slave: water_slave_mega_i2c
+flash-water-slave: water/i2c_slave_mega
 	cd water_slave_mega_i2c \
 	&& pio run -t upload --upload-port /dev/tty.usbserial-1450 \
 	&& pio device monitor --port /dev/tty.usbserial-1450
 
-flash-water-master: water_master_esp32
+flash-water-master: water/master_esp32
 	cd water_master_esp32 \
 	&& pio run -t upload --upload-port /dev/tty.SLAB_USBtoUART \
 	&& pio device monitor --port /dev/tty.SLAB_USBtoUART
