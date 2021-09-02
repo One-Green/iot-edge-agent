@@ -17,7 +17,8 @@ Outputs :
 - Water Tank mixing pump relay
 - Nutrient metering pump relay
 - Ph downer metering pump relay
-- ESP32 and Mega work through i2c protocol.
+
+ESP32 and Mega work through i2c protocol.
 
 **ESP32** handle MQTT publish/subscription with One-Green Core.
 
