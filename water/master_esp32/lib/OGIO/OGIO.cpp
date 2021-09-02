@@ -58,9 +58,9 @@ void OGIO::initR(char *nodeTag)
 }
 
 void OGIO::sendCommand(const byte cmd, const int responseSize)
-{
-	Serial.print("I2C send command >");
-	Serial.println(cmd);
+{	
+	delay(50);
+	Serial.println("I2C send command [" + String(cmd) + "]");
 	Wire.beginTransmission(SLAVE_ADDRESS);
 	Wire.write(cmd);
 	Wire.endTransmission();
@@ -92,7 +92,7 @@ float OGIO::readFloat(const byte cmd)
 	// and convert to float 
 	byte resp_length = 10;
 	char resp_buffer[resp_length] ; 
-	
+
 	OGIO::sendCommand(cmd, resp_length);
 
 	if (Wire.available()) {
