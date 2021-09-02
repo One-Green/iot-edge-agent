@@ -45,7 +45,7 @@ enum
 	CMD_WRITE_HIGH_MIXER_PUMP     = 19,
 
 	// safety actions 
-	CMD_SAFE_MODE 			          = 20
+	CMD_SAFE_MODE 			      = 20
 };
 
 
