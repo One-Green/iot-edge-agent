@@ -306,6 +306,35 @@ void pubSensorsVals()
     client.publish(SENSOR_TOPIC, line_proto_char);
 }
 
+void testI2Cslave()
+{
+    // idle
+    io_handler.sendIdle();
+    delay(200);
+
+    float v;
+    // ph raw adc
+    // io_handler.getPhLevelRawADC();
+    // tds raw adc
+    // for (byte i=0; i <20; i++)
+    // {
+    //     io_handler.getTDSRawADC();
+    //     delay(50);
+    // }
+    // ph real value
+    // io_handler.getPhLevel();
+    // delay(50);
+    // tds real value
+    // io_handler.getTDS();
+    // water tank level
+    // io_handler.getWaterLevelCM();
+    // nutrient tank level
+    io_handler.getNutrientLevelCM();
+    delay(200);
+    // ph downer tank level
+    // io_handler.getPhDownerLevelCM();
+
+}
 
 void setup() {
 
@@ -314,27 +343,33 @@ void setup() {
     Serial.println("Serial Begin OK");
 
     // Display Init
-    displayLib.initR();
-    displayLib.initWifi();
+    // displayLib.initR();
+    // displayLib.initWifi();
 
     // Connect to WiFi 
-    connectToWiFiNetwork();
+    // connectToWiFiNetwork();
 
     // Display WiFi Info
-    displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
-    displayLib.printTemplate();
+    // displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
+    // displayLib.printTemplate();
 
     /* MQTT connexion */
-    client.setServer(MQTT_SERVER, MQTT_PORT);
-    client.setCallback(mqttCallback);
+    // client.setServer(MQTT_SERVER, MQTT_PORT);
+    // client.setCallback(mqttCallback);
 
     /* Init MQTT Pub Sensor Timer */
-    pubSensorTimer = millis();
+    // pubSensorTimer = millis();
+    
+    
+    // for purpose only tests
+    io_handler.initR(NODE_TAG);
+    testI2Cslave();
+
 }
 
 
 void loop() {
-
+    delay(99999999);
     //reconnect MQTT Client if not connected
     if (!client.connected()) {
         reconnect_mqtt();

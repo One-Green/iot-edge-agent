@@ -17,9 +17,9 @@ public:
 	float TDSRawADC;
 	float pH;
 	float TDS;
-	int WaterTankLevel;
-	int PHTankLevel;
-	int NutrientTankLevel;
+	float WaterTankLevel;
+	float PHTankLevel;
+	float NutrientTankLevel;
 	String lineProtoStr; // formatted metrics for influx db line protocol 
 
 	byte sendIdle();
@@ -33,9 +33,9 @@ public:
 	float getPhLevel();	
 	float getTDS();
 
-	int getWaterLevelCM();
-	int getNutrientLevelCM();
-	int getPhDownerLevelCM();
+	float getWaterLevelCM();
+	float getNutrientLevelCM();
+	float getPhDownerLevelCM();
 
 	String generateInfluxLineProtocol();
 	

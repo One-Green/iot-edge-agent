@@ -49,13 +49,13 @@ void OGIO::initR(char *nodeTag)
 	OGIO::nodeTag = NODE_TAG;
 	Wire.begin();   
 	OGIO::sendCommand(CMD_IDLE, 1);
-	if (Wire.available ())
+	if (Wire.available())
 	{
-		Serial.print ("Slave is ID: ");
-		Serial.println (Wire.read (), DEC);
+		Serial.print("Slave is ID: ");
+		Serial.println(Wire.read(), DEC);
 	}
 	else
-		Serial.println ("No response to ID request");
+		Serial.println("No response to ID request");
 }
 
 
@@ -65,7 +65,7 @@ void OGIO::sendCommand(const byte cmd, const int responseSize)
 	Serial.print(cmd);
 	Serial.println("]");
 	Wire.beginTransmission(SLAVE_ADDRESS);
-	Wire.write (cmd);
+	Wire.write(cmd);
 	Wire.endTransmission();
 	Wire.requestFrom(SLAVE_ADDRESS, responseSize);  
 } 
@@ -82,6 +82,7 @@ int OGIO::readInt(const byte cmd)
 
 void OGIO::flushI2C()
 {
+	delay(20);
 	while (Wire.available())
 	{
 		Wire.read();
@@ -97,7 +98,7 @@ float OGIO::readFloat(const byte cmd)
 	
 	OGIO::sendCommand(cmd, resp_length);
 
-	if (Wire.available()) {
+	if (Wire.available() >= 5) {
 		for (byte i = 0; i < resp_length; i = i + 1) 
 			{
   				resp_buffer[i] = Wire.read();
@@ -148,22 +149,22 @@ float OGIO::getTDS()
 	return OGIO::TDS;
 }
 
-int OGIO::getWaterLevelCM()
+float OGIO::getWaterLevelCM()
 {
-	OGIO::WaterTankLevel = OGIO::readInt(CMD_READ_WATER_LVL);
+	OGIO::WaterTankLevel = OGIO::readFloat(CMD_READ_WATER_LVL);
 	return OGIO::WaterTankLevel;
 
 }
 
-int OGIO::getNutrientLevelCM()
+float OGIO::getNutrientLevelCM()
 {
-	OGIO::NutrientTankLevel = OGIO::readInt(CMD_READ_NUTRIENT_LVL);
+	OGIO::NutrientTankLevel = OGIO::readFloat(CMD_READ_NUTRIENT_LVL);
 	return OGIO::NutrientTankLevel;
 }
 
-int OGIO::getPhDownerLevelCM()
+float OGIO::getPhDownerLevelCM()
 {
-	OGIO::PHTankLevel = OGIO::readInt(CMD_READ_PH_DOWNER_PUMP);
+	OGIO::PHTankLevel = OGIO::readFloat(CMD_READ_PH_DOWNER_PUMP);
 	return OGIO::PHTankLevel;
 }
 
