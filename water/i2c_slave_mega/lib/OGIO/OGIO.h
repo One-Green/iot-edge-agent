@@ -2,8 +2,6 @@
 // Created by shan on 06/11/2020.
 //
 
-#ifndef NODE_WATER_ARDUINO_OGIO_H
-#define NODE_WATER_ARDUINO_OGIO_H
 
 // TDS measurement configuration
 #define SCOUNT 30
