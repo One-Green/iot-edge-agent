@@ -2,22 +2,21 @@
 // Created by shan on 06/11/2020.
 //
 
-#ifndef NODE_WATER_ARDUINO_OGIO_H
-#define NODE_WATER_ARDUINO_OGIO_H
-
 // TDS measurement configuration
 #define SCOUNT 30
 #define VREF  5
 
 class OGIO {
+private:
+    int getMedianNum(int bArray[], int iFilterLen);
+    float baseUltrasonicReader(int trigger, int echo);
 
 public:
-
     void initR();
 
-    int getWaterLevelCM();
-    int getNutrientLevelCM();
-    int getPhDownerLevelCM();
+    float getWaterLevelCM();
+    float getNutrientLevelCM();
+    float getPhDownerLevelCM();
 
     float getPhLevelRawADC();
     float getTDSRawADC();
@@ -39,11 +38,6 @@ public:
     int getPhDownerPumpStatus();
     int getMixerPumpStatus();
 
-    int getMedianNum(int bArray[], int iFilterLen);
-    int baseUltrasonicReader(int trigger, int echo);
 };
 
 extern OGIO io_handler;
-
-
-#endif //NODE_WATER_ARDUINO_OGIO_H

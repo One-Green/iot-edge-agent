@@ -120,23 +120,26 @@ void requestEvent ()
     
     case CMD_READ_WATER_LVL:
       Serial.print("I2C recived CMD_READ_WATER_LVL, lvl=");
-      intVal = io_handler.getWaterLevelCM();
-      Serial.print(val);
-      I2CwriteInteger(intVal);
+      val = io_handler.getWaterLevelCM();
+      Serial.println(val);
+      str.concat(val);
+      Wire.write(str.c_str());
       break;  
     
     case CMD_READ_NUTRIENT_LVL:
       Serial.print("I2C recived CMD_READ_NUTRIENT_LVL, lvl=");
-      intVal = io_handler.getNutrientLevelCM();
-      Serial.print(val);
-      I2CwriteInteger(intVal);
+      val = io_handler.getNutrientLevelCM();
+      Serial.println(val);
+      str.concat(val);
+      Wire.write(str.c_str());
       break;  
 
     case CMD_READ_PH_LVL:
       Serial.print("I2C recived CMD_READ_PH_LVL, lvl=");
-      intVal = io_handler.getPhDownerLevelCM();
-      Serial.print(val);
-      I2CwriteInteger(intVal);
+      val = io_handler.getPhDownerLevelCM();
+      Serial.println(val);
+      str.concat(val);
+      Wire.write(str.c_str());
       break;  
     
     // ------------------- water pump cases 
