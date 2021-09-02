@@ -43,7 +43,6 @@ enum
 	CMD_SAFE_MODE 			      = 20
 };
 
-
 void OGIO::initR(char *nodeTag) 
 {
 	OGIO::nodeTag = NODE_TAG;
@@ -58,7 +57,6 @@ void OGIO::initR(char *nodeTag)
 		Serial.println("No response to ID request");
 }
 
-
 void OGIO::sendCommand(const byte cmd, const int responseSize)
 {
 	Serial.print("I2C send command >");
@@ -67,8 +65,8 @@ void OGIO::sendCommand(const byte cmd, const int responseSize)
 	Wire.write(cmd);
 	Wire.endTransmission();
 	Wire.requestFrom(SLAVE_ADDRESS, responseSize);  
-} 
-  
+}
+
 int OGIO::readInt(const byte cmd)
 {
 	int val;  
@@ -97,7 +95,7 @@ float OGIO::readFloat(const byte cmd)
 	
 	OGIO::sendCommand(cmd, resp_length);
 
-	if (Wire.available() >= 5) {
+	if (Wire.available()) {
 		for (byte i = 0; i < resp_length; i = i + 1) 
 			{
   				resp_buffer[i] = Wire.read();
@@ -121,6 +119,12 @@ byte OGIO::readByte(byte cmd)
 	OGIO::sendCommand(cmd, 1);
 	val = Wire.read();
 	return val;
+}
+
+byte OGIO::sendIdle()
+{
+	OGIO::idleReturn = OGIO::readByte(CMD_IDLE);
+	return OGIO::idleReturn;
 }
 
 float OGIO::getPhLevelRawADC()
@@ -274,7 +278,5 @@ byte OGIO::safeMode()
 	OGIO::safeModeStatus = OGIO::readByte(CMD_SAFE_MODE);
 	return OGIO::safeModeStatus;
 }
-
-
 
 OGIO io_handler;

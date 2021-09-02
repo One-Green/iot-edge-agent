@@ -23,6 +23,7 @@ public:
 	String lineProtoStr; // formatted metrics for influx db line protocol 
 
 	byte sendIdle();
+    byte idleReturn;
 
 	void initR(char *nodeTag);
 
