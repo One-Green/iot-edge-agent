@@ -20,8 +20,8 @@ public:
     float getNutrientLevelCM();
     float getPhDownerLevelCM();
 
-    float getPhLevelRawADC();
-    float getTDSRawADC();
+    float getPhVoltage();
+    float getTDSVoltage();
 
     float getPhLevel();
     float getTDS();

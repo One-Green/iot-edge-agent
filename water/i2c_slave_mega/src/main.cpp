@@ -20,8 +20,8 @@ enum
 	CMD_IDLE                      = 0,
 
   // Sensors report commands
-	CMD_READ_PH_RAW_ADC           = 1,
-	CMD_READ_TDS_RAW_ADC          = 2,
+	CMD_READ_PH_VOLTAGE           = 1,
+	CMD_READ_TDS_VOLTAGE          = 2,
 	CMD_READ_PH                   = 3,
 	CMD_READ_TDS                  = 4,
 	CMD_READ_WATER_LVL            = 5,
@@ -89,17 +89,17 @@ void requestEvent ()
       Serial.println("I2C received CMD_IDLE");
       break;
 
-    case CMD_READ_PH_RAW_ADC:
-      Serial.print("I2C received CMD_READ_PH_RAW_ADC, pH raw adc=");
-      val = io_handler.getPhLevelRawADC();    
+    case CMD_READ_PH_VOLTAGE:
+      Serial.print("I2C received CMD_READ_PH_VOLTAGE, pH voltage=");
+      val = io_handler.getPhVoltage();    
       Serial.println(val);
       str.concat(val);
       Wire.write(str.c_str());
       break;  
     
-    case CMD_READ_TDS_RAW_ADC:
-      Serial.print("I2C received CMD_READ_TDS_RAW_ADC, tds raw adc=");
-      val = io_handler.getTDSRawADC();    
+    case CMD_READ_TDS_VOLTAGE:
+      Serial.print("I2C received CMD_READ_TDS_VOLTAGE, tds voltage=");
+      val = io_handler.getTDSVoltage();    
       Serial.println(val);
       str.concat(val);
       Wire.write(str.c_str());
@@ -255,13 +255,20 @@ void setup()
   command = 0;
   Serial.begin(9600);
 
+  Serial.print("Sampling TDS voltage");
+  for (byte i=0; i <20; i++)
+  {
+    io_handler.getTDSVoltage();
+    delay(50);
+    Serial.print(".");
+  }
+  Serial.println(" done");
+
   Wire.begin(I2C_ADDRESS);
   Wire.onReceive(receiveEvent);  
   Wire.onRequest(requestEvent); 
-  Serial.print("I2C Salve is up , addr =");
-  Serial.println(I2C_ADDRESS);
-
-  io_handler.initR();                // I/O Arduino mega setup digital pin mode
+  Serial.println("I2C Salve is up, addr =" + String(I2C_ADDRESS));
+  io_handler.initR();     // I/O Arduino mega setup digital pin mode
   
 }
 

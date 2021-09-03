@@ -57,7 +57,7 @@ float OGIO::getNutrientLevelCM() { return OGIO::baseUltrasonicReader(NutrientLev
 
 float OGIO::getPhDownerLevelCM() { return OGIO::baseUltrasonicReader(pHDownerLevelTriggerPin, pHDownerLevelEchoPin); }
 
-float OGIO::getPhLevelRawADC(){
+float OGIO::getPhVoltage(){
     int samples = 10;
     float adc_resolution = 1024.0;
     int measurings = 0;
@@ -69,7 +69,7 @@ float OGIO::getPhLevelRawADC(){
     return voltage;
 }
 
-float OGIO::getTDSRawADC(){
+float OGIO::getTDSVoltage(){
  static unsigned long analogSampleTimepoint = millis();
     if (millis() - analogSampleTimepoint > 40U) //every 40 milliseconds,read the analog value from the ADC
     {
@@ -122,7 +122,7 @@ float OGIO::getTDS() {
     // Serial.print("TDS Value:");
     // Serial.print(tdsValue, 0);
     // Serial.println("ppm");
-    Serial.println(tdsValue);
+    // Serial.println(tdsValue);
     return tdsValue;
 }
 
