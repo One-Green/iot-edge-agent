@@ -313,26 +313,62 @@ void testI2Cslave()
     delay(200);
 
     float v;
-    // ph raw adc
-    // io_handler.getPhLevelRawADC();
-    // tds raw adc
-    // for (byte i=0; i <20; i++)
-    // {
-    //     io_handler.getTDSRawADC();
-    //     delay(50);
-    // }
-    // ph real value
-    // io_handler.getPhLevel();
-    // delay(50);
+    // ph voltage
+    io_handler.getPhVoltage();
+    // tds voltage
+    io_handler.getTDSVoltage();
+    // ph real valu1e
+    io_handler.getPhLevel();
     // tds real value
-    // io_handler.getTDS();
+    io_handler.getTDS();
+
     // water tank level
-    // io_handler.getWaterLevelCM();
+    io_handler.getWaterLevelCM();
     // nutrient tank level
     io_handler.getNutrientLevelCM();
-    delay(200);
     // ph downer tank level
-    // io_handler.getPhDownerLevelCM();
+    io_handler.getPhDownerLevelCM();
+
+    // on+off water pump
+    io_handler.getWaterPumpStatus();
+    io_handler.OnWaterPump();
+    delay(1000);
+    io_handler.OffWaterPump();
+    delay(500);
+    io_handler.OnWaterPump();
+    delay(1000);
+    io_handler.OffWaterPump();
+
+    io_handler.getPhDownerPumpStatus();
+    io_handler.OnPhDownerPump();
+    delay(1000);
+    io_handler.OffPhDownerPump();
+    delay(500);
+    io_handler.OnPhDownerPump();
+    delay(1000);
+    io_handler.OffPhDownerPump();
+
+    io_handler.getNutrientPumpStatus();
+    io_handler.OnNutrientPump();
+    delay(1000);
+    io_handler.OffNutrientPump();
+    delay(500);
+    io_handler.OnNutrientPump();
+    delay(1000);
+    io_handler.OffNutrientPump();
+
+    io_handler.getMixerPumpStatus();
+    io_handler.OnMixerPump();
+    delay(1000);
+    io_handler.OffMixerPump();
+    delay(500);
+    io_handler.OnMixerPump();
+    delay(1000);
+    io_handler.OffMixerPump();
+    String tmp;
+    Serial.println("Generating line protocol string = ");
+    tmp = io_handler.generateInfluxLineProtocol();
+    Serial.println(tmp);
 
 }
 
@@ -369,7 +405,9 @@ void setup() {
 
 
 void loop() {
-    delay(99999999);
+    // io_handler.getNutrientLevelCM();
+    // delay(500);
+    /*
     //reconnect MQTT Client if not connected
     if (!client.connected()) {
         reconnect_mqtt();
@@ -382,17 +420,17 @@ void loop() {
         Serial.println("[MQTT] Warning callback time reached: switch OFF all actuators");
         io_handler.safeMode();
         Serial.println("[MQTT] all actuators OFF");
-    }
+    */
     
     //Pub sensors every 10 secs and only if the client is connected
-    if (client.connected() && (millis() - pubSensorTimer > (sensorPubRateSec * 1000)))
-    {
+    /* if (client.connected() && (millis() - pubSensorTimer > (sensorPubRateSec * 1000)))
+     {
         //send sensors to MQTT Broker
         pubSensorsVals();
         //update timer
         pubSensorTimer = millis();
     }
-
+*/
 
     // update TFT screen
     //displayLib.updateDisplay(
@@ -402,5 +440,4 @@ void loop() {
     //  ctl_ph_level_min, ctl_ph_level_max, ctl_tds_level_min, ctl_tds_level_max
     // );
 
-    delay(300);
 }
