@@ -12,9 +12,9 @@ private:
 	byte readByte(const byte cmd);
 
 public:
-	char *nodeTag;
-	float pHRawADC;
-	float TDSRawADC;
+	String nodeTag;
+	float phVoltage;
+	float TDSVoltage;
 	float pH;
 	float TDS;
 	float WaterTankLevel;
@@ -28,8 +28,8 @@ public:
 	void initR(char *nodeTag);
 
 	// sensors reading 
-	float getPhLevelRawADC();
-	float getTDSRawADC();
+	float getPhVoltage();
+	float getTDSVoltage();
 
 	float getPhLevel();	
 	float getTDS();

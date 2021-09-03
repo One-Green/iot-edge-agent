@@ -15,8 +15,8 @@ enum
 	CMD_IDLE                      = 0,
 
   // Sensors repport commands
-	CMD_READ_PH_RAW_ADC           = 1,
-	CMD_READ_TDS_RAW_ADC          = 2,
+	CMD_READ_PH_VOLTAGE           = 1,
+	CMD_READ_TDS_VOLTAGE          = 2,
 	CMD_READ_PH                   = 3,
 	CMD_READ_TDS                  = 4,
 	CMD_READ_WATER_LVL            = 5,
@@ -106,18 +106,17 @@ float OGIO::readFloat(const byte cmd)
 
 	// convert to float 
 	float val = atof(resp_buffer);
-	Serial.print("readFloat >> ");
-	Serial.println(val);
-
+	Serial.println("readFloat >> " + String(val));
 	return val;
 
 }
 
 byte OGIO::readByte(byte cmd)
 {
-	int val;
+	byte val;
 	OGIO::sendCommand(cmd, 1);
 	val = Wire.read();
+	Serial.println("readByte >> " + String(val));
 	return val;
 }
 
@@ -127,16 +126,16 @@ byte OGIO::sendIdle()
 	return OGIO::idleReturn;
 }
 
-float OGIO::getPhLevelRawADC()
+float OGIO::getPhVoltage()
 {
-	OGIO::pHRawADC = OGIO::readInt(CMD_READ_PH);
-	return OGIO::pHRawADC;
+	OGIO::phVoltage = OGIO::readFloat(CMD_READ_PH_VOLTAGE);
+	return OGIO::phVoltage;
 }
 
-float OGIO::getTDSRawADC()
+float OGIO::getTDSVoltage()
 {
-	OGIO::TDSRawADC = OGIO::readInt(CMD_READ_TDS);
-	return OGIO::TDSRawADC;
+	OGIO::TDSVoltage = OGIO::readFloat(CMD_READ_TDS_VOLTAGE);
+	return OGIO::TDSVoltage;
 }
 
 float OGIO::getPhLevel()
@@ -166,7 +165,7 @@ float OGIO::getNutrientLevelCM()
 
 float OGIO::getPhDownerLevelCM()
 {
-	OGIO::PHTankLevel = OGIO::readFloat(CMD_READ_PH_DOWNER_PUMP);
+	OGIO::PHTankLevel = OGIO::readFloat(CMD_READ_PH_LVL);
 	return OGIO::PHTankLevel;
 }
 
@@ -175,8 +174,8 @@ String OGIO::generateInfluxLineProtocol()
 {
 	
 	// read value and save as attibute
-	this->getPhLevelRawADC();
-	this->getTDSRawADC();
+	this->getPhVoltage();
+	this->getTDSVoltage();
 	
 	this->getPhLevel();
 	this->getTDS();
@@ -186,14 +185,14 @@ String OGIO::generateInfluxLineProtocol()
 	this->getPhDownerLevelCM();
 
 	String lineProtoStr =
-			"water,tag=" + String(nodeTag)
-			+ " ph_voltage=" + String(OGIO::pHRawADC)+","    				// raw adc 
-			+ "tds_voltage=" + String(OGIO::TDSRawADC)+","; 				// raw adc
-			+ "ph=" + String(OGIO::pH)+",";                 				// real value
-			+ "tds=" + String(OGIO::TDS)+",";								// real value
-			+ "water_tk_lvl=" + String(OGIO::WaterTankLevel)+"i,"; 			// real level in cm
-			+ "nutrient_tk_lvl=" + String(OGIO::NutrientTankLevel)+"i,";    // real level in cm
-			+ "ph_downer_tk_lvl=" + String(OGIO::PHTankLevel)+"i";			// real level in cm
+		"water,tag=" + OGIO::nodeTag
+		+ " ph_voltage=" + String(OGIO::phVoltage)+","    			                // raw adc 
+		+ "tds_voltage=" + String(OGIO::TDSVoltage)+"," 				 				// raw adc
+		+ "ph=" + String(OGIO::pH)+","                 								// real value
+		+ "tds=" + String(OGIO::TDS)+","											// real value
+		+ "water_tk_lvl=" + String((unsigned int) OGIO::WaterTankLevel)+"i," 		// real level in cm
+		+ "nutrient_tk_lvl=" + String((unsigned int) OGIO::NutrientTankLevel)+"i,"  // real level in cm
+		+ "ph_downer_tk_lvl=" + String((unsigned int )OGIO::PHTankLevel)+"i";		// real level in cm
 	return lineProtoStr ;
 }
 
