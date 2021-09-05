@@ -34,8 +34,8 @@
 
 unsigned long pubSensorTimer;
 unsigned long subControllerTimer;
-const int sensorPubRateSec = 2; //send sensor values each 10 sec
-const int safetyCloseActuatorSec = 5; //close actuators if no response from Master
+const int sensorPubRateSec = 1; //send sensor values each x seconds
+const int safetyCloseActuatorSec = 3; //close actuators if no response from Master
 bool mqttCallbackInError = false; // if callback received = false, if safetyCloseActuatorSec = true
 
 // Parameter from Master, provided by MQTT JSON
@@ -69,7 +69,6 @@ DisplayLib displayLib;
 
 // methods
 
-
 void connectToWiFiNetwork()
 {
     Serial.print("[WIFI] Connecting to ");
@@ -80,7 +79,7 @@ void connectToWiFiNetwork()
         delay(100);
     }
     Serial.println("\n");
-    displayLib.connectedWifi();
+    // displayLib.connectedWifi();
     Serial.println("[WIFI] Connected ");
     Serial.print("[WIFI] IP address: ");
     Serial.println(WiFi.localIP());
@@ -104,7 +103,7 @@ void reconnect_mqtt() {
             // Subscribe
             client.subscribe(CONTROLLER_TOPIC);
         } else {
-            Serial.print("[MQTT] failed, rc=");
+            Serial.print("[MQTT] failed to connect, rc=");
             Serial.print(client.state());
             Serial.println("[MQTT] try again in 5 seconds");
             // Wait 5 seconds before retrying
@@ -112,7 +111,6 @@ void reconnect_mqtt() {
         }
     }
 }
-
 
 void mqttCallback(char *topic, byte *message, unsigned int length) {
     /*
@@ -148,16 +146,14 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     ctl_nutrient_pump = obj[String("nutrient_pump_signal")];
     //Parsing PH Downer Pumps param
     ctl_ph_downer_pump = obj[String("ph_downer_pump_signal")];
-
-    // TODO: how to handle mixer ?
-    // ctl_mixer_pump = obj[String("mixer_pump")];
+    // Parsing PH Downer Pumps param
+    ctl_mixer_pump = obj[String("mixer_pump_signal")];
 
     ctl_ph_level_min = obj[String("ph_min_level")];
     ctl_ph_level_max = obj[String("ph_max_level")];
     ctl_tds_level_min = obj[String("tds_min_level")];
     ctl_tds_level_max = obj[String("tds_max_level")];
 
-    // TODO : add actuator flow below
     if (tag != NODE_TAG) return;
     
     unsigned long timeoutCount = millis();
@@ -293,6 +289,7 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             Serial.println("[I/O] mixer pump is CLOSED");
         }
     }
+
 }
 
 void pubSensorsVals()
@@ -303,6 +300,7 @@ void pubSensorsVals()
     int line_proto_len = line_proto.length() + 1;
     char line_proto_char[line_proto_len];
     line_proto.toCharArray(line_proto_char, line_proto_len);
+    Serial.println("[MQTT] Writing >> on topic " + String(SENSOR_TOPIC));
     client.publish(SENSOR_TOPIC, line_proto_char);
 }
 
@@ -365,6 +363,7 @@ void testI2Cslave()
     io_handler.OnMixerPump();
     delay(1000);
     io_handler.OffMixerPump();
+    
     String tmp;
     Serial.println("Generating line protocol string = ");
     tmp = io_handler.generateInfluxLineProtocol();
@@ -378,59 +377,62 @@ void setup() {
     Serial.begin(9600);
     Serial.println("Serial Begin OK");
 
+    // init i/o handler
+    io_handler.initR(NODE_TAG);
+    io_handler.safeMode();
+
     // Display Init
     // displayLib.initR();
     // displayLib.initWifi();
 
     // Connect to WiFi 
-    // connectToWiFiNetwork();
+    connectToWiFiNetwork();
 
     // Display WiFi Info
     // displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
     // displayLib.printTemplate();
 
     /* MQTT connexion */
-    // client.setServer(MQTT_SERVER, MQTT_PORT);
-    // client.setCallback(mqttCallback);
+    client.setServer(MQTT_SERVER, MQTT_PORT);
+    client.setCallback(mqttCallback);
 
     /* Init MQTT Pub Sensor Timer */
-    // pubSensorTimer = millis();
-
+    pubSensorTimer = millis();
 
     // for purpose only tests
-    io_handler.initR(NODE_TAG);
-    testI2Cslave();
+    // testI2Cslave();
 
 }
 
 
 void loop() {
-    // io_handler.getNutrientLevelCM();
-    // delay(500);
-    /*
+   
     //reconnect MQTT Client if not connected
     if (!client.connected()) {
         reconnect_mqtt();
     }
-
+    
     client.loop();
+    
+    // Safe mode if no mqtt callback 
     if (client.connected() && (millis() - subControllerTimer > (safetyCloseActuatorSec * 1000)) && mqttCallbackInError == false )
     {
         mqttCallbackInError = true;
         Serial.println("[MQTT] Warning callback time reached: switch OFF all actuators");
         io_handler.safeMode();
         Serial.println("[MQTT] all actuators OFF");
-    */
+    }
     
-    //Pub sensors every 10 secs and only if the client is connected
-    /* if (client.connected() && (millis() - pubSensorTimer > (sensorPubRateSec * 1000)))
+    // Pub sensors every publish_evey (m) and only if the client is connected
+     if (client.connected() && (millis() - pubSensorTimer > (sensorPubRateSec * 1000)))
      {
         //send sensors to MQTT Broker
         pubSensorsVals();
         //update timer
         pubSensorTimer = millis();
     }
-*/
+    else
+        Serial.print("...");
 
     // update TFT screen
     //displayLib.updateDisplay(
