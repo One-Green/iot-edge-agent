@@ -13,6 +13,9 @@ const byte I2C_ADDRESS = 2;
 int val ;
 char command;
 
+// Safety consideration: if no I2C receiveEvent after safetyCloseActuatorSec second
+unsigned long lastReceiveEvent;
+const int safetyCloseActuatorSec = 2; // close actuators if no request from I2C Master
 
 // i2c exchange table
 enum
@@ -49,6 +52,7 @@ enum
 };
 
 
+
 float water_tank_level;
 float nutrient_tank_level;
 float ph_downer_tank_level;
@@ -71,7 +75,11 @@ void I2CwriteInteger(int value)
 }
 
 
-void receiveEvent (int howMany) { command = Wire.read ();} 
+void receiveEvent (int howMany) 
+{ 
+  lastReceiveEvent = millis();
+  command = Wire.read ();
+} 
 
 void requestEvent ()
 {
@@ -269,10 +277,30 @@ void setup()
   Wire.onRequest(requestEvent); 
   Serial.println("I2C Salve is up, addr =" + String(I2C_ADDRESS));
   io_handler.initR();     // I/O Arduino mega setup digital pin mode
-  
+  lastReceiveEvent = millis();
 }
 
-void loop() {
+void safeModHandler()
+{
+  /*
+  Set actuator in safety mode if no receiveEvent after x seconds
+  lastReceiveEvent is updated in receiveEvent();
+  */
+  if (millis() - lastReceiveEvent > (safetyCloseActuatorSec * 1000))
+  {
+      Serial.println("I2C Timeout reached (" + String(safetyCloseActuatorSec) + "), safety mode activated" );
+      io_handler.setWaterPump(0);
+      io_handler.setNutrientPump(0);
+      io_handler.setPHDownerPump(0);
+      io_handler.setMixerPump(0);
+      Serial.println("Wait 0.5 seconds");
+      delay(500);
+  }
+}
+
+void loop() 
+{
+  safeModHandler();
   water_tank_level = io_handler.getWaterLevelCM();
   delay(50);
   nutrient_tank_level = io_handler.getNutrientLevelCM();
