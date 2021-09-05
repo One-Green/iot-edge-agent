@@ -187,9 +187,9 @@ String OGIO::generateInfluxLineProtocol()
 	String lineProtoStr =
 		"water,tag=" + OGIO::nodeTag
 		+ " ph_voltage=" + String(OGIO::phVoltage)+","    			                // raw adc 
-		+ "tds_voltage=" + String(OGIO::TDSVoltage)+"," 				 				// raw adc
-		+ "ph=" + String(OGIO::pH)+","                 								// real value
-		+ "tds=" + String(OGIO::TDS)+","											// real value
+		+ "tds_voltage=" + String(OGIO::TDSVoltage)+"," 				 		    // raw adc
+		+ "ph_level=" + String(OGIO::pH)+","                 					    // real value
+		+ "tds_level=" + String(OGIO::TDS)+","										// real value
 		+ "water_tk_lvl=" + String((unsigned int) OGIO::WaterTankLevel)+"i," 		// real level in cm
 		+ "nutrient_tk_lvl=" + String((unsigned int) OGIO::NutrientTankLevel)+"i,"  // real level in cm
 		+ "ph_downer_tk_lvl=" + String((unsigned int )OGIO::PHTankLevel)+"i";		// real level in cm
