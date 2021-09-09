@@ -1,39 +1,38 @@
 #include "Arduino.h"
 #include "SPI.h"
-#include "Adafruit_GFX.h"
-#include "Adafruit_ST7735.h"
+#include "TFT_eSPI.h" // Hardware-specific library
 #include "OGDisplay.h"
 
-#define TFT_CS   15
-#define TFT_RST  4
-#define TFT_DC   2
-#define TFT_MOSI 23
-#define TFT_SCLK 18
-// not required
-// #define TFT_MISO 12
+#define SCREENWIDTH 320
+#define SCREENHEIGHT 240
 
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+#define BGCOLOR    0xAD75
+#define GRIDCOLOR  0xA815
+#define BGSHADOW   0x5285
+#define GRIDSHADOW 0x600C
+#define RED        0xF800
+#define WHITE      0xFFFF
 
+// SPI Configuration is defined in:
+// water/master_esp32/.pio/libdeps/esp32dev/TFT_eSPI/User_Setup.h
+TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 void DisplayLib::initR() {
-
-	tft.initR(INITR_BLACKTAB);
-	tft.fillScreen(ST7735_BLACK);
-	delay(500);
-	// large block of text
-	tft.fillScreen(ST7735_BLACK);
-	drawtext("Screen initialised", ST7735_WHITE);
-
+	tft.begin();
+  	tft.setRotation(1);
+ 	tft.fillScreen(TFT_BLACK);
+  	tft.setTextColor(TFT_RED, TFT_BLACK);
+  	tft.drawString("Init screen", 50, 5, 4);
 }
 
 
 void DisplayLib::initWifi() {
-	drawtext("Connecting to WIFI", ST7735_WHITE);
+	// drawtext("Connecting to WIFI", WHITE);
 }
 
 
 void DisplayLib::connectedWifi() {
-	drawtext("Connected to WIFI", ST7735_WHITE);
+	//drawtext("Connected to WIFI", WHITE);
 }
 
 
@@ -42,9 +41,9 @@ void DisplayLib::printHeader(
 		IPAddress ip,
 		char *nodeType,
 		char *nodeTag) {
-	tft.fillRect(0, 0, 128, 50, ST7735_WHITE);
-	tft.fillRect(0, 50, 128, 160, ST7735_GREEN);
-	tft.setTextColor(ST7735_BLACK);
+	//tft.fillRect(0, 0, 128, 50, WHITE);
+	//tft.fillRect(0, 50, 128, 160, TFT_GREEN);
+	// tft.setTextColor(ST7735_BLACK);
 
 	// print wifi SSID
 	tft.setCursor(2, 2);
@@ -94,7 +93,7 @@ void DisplayLib::updateDisplay(
 		float configMax,
 		bool water_valve_signal){
 
-	tft.fillRect(90, 50, 128, 50, ST7735_GREEN);
+	// tft.fillRect(90, 50, 128, 50, ST7735_GREEN);
 
 	tft.setCursor(95, 50);
 	tft.print((int) moistureLevelADC);
@@ -119,7 +118,7 @@ void DisplayLib::updateDisplay(
 }
 
 void DisplayLib::drawtext(char *text, uint16_t color) {
-	tft.fillScreen(ST7735_BLACK);
+	//tft.fillScreen(ST7735_BLACK);
 	tft.setCursor(0, 0);
 	tft.setTextColor(color);
 	tft.setTextWrap(true);
@@ -131,11 +130,11 @@ void DisplayLib::printRegistryError() {
 	String message = "Not registered, "
 	                 "tag is already in database, "
 	                 "to bypass change variable  CHECK_NODE_TAG_DUPLICATE to false";
-	tft.fillRect(0, 50, 128, 160, ST7735_RED);
+	// tft.fillRect(0, 50, 128, 160, ST7735_RED);
 	tft.setCursor(0, 50);
 	tft.print(message);
 	delay(500);
-	tft.fillRect(0, 50, 128, 160, ST7735_YELLOW);
+	// tft.fillRect(0, 50, 128, 160, ST7735_YELLOW);
 	tft.setCursor(0, 50);
 	tft.print(message);
 	delay(500);
@@ -162,8 +161,8 @@ void DisplayLib::uptime()
 	mins=secs/60; //convert seconds to minutes
 	hours=mins/60; //convert minutes to hours
 	days=hours/24; //convert hours to days
-	secs=secs-(mins*60); //subtract the coverted seconds to minutes in order to display 59 secs max
-	mins=mins-(hours*60); //subtract the coverted minutes to hours in order to display 59 minutes max
-	hours=hours-(days*24); //subtract the coverted hours to days in order to display 23 hours max
+	secs=secs-(mins*60); //subtract the converted seconds to minutes in order to display 59 secs max
+	mins=mins-(hours*60); //subtract the converted minutes to hours in order to display 59 minutes max
+	hours=hours-(days*24); //subtract the converted hours to days in order to display 23 hours max
 
 }

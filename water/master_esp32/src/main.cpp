@@ -371,6 +371,11 @@ void testI2Cslave()
 
 }
 
+void testDisplay()
+{
+    displayLib.initR();
+}
+
 void setup() {
 
     // Serial Ports Init 
@@ -401,7 +406,7 @@ void setup() {
 
     // for purpose only tests
     // testI2Cslave();
-
+    // testDisplay();
 }
 
 
