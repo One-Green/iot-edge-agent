@@ -22,10 +22,10 @@
 #include "OGIO.h"
 #include "Config.h"
 
-// ADC to MAX = 100% and ADC tp MIN = 0% calibration
+// ADC to MAX = 0% and ADC to MIN = 100% calibration
 // Used for mapping
-int SOIL_MOISTURE_ADC_MAX = 3550;
-int SOIL_MOISTURE_ADC_MIN = 1830;
+int SOIL_MOISTURE_ADC_MAX = 4095;
+int SOIL_MOISTURE_ADC_MIN = 1300;
 
 // ensure NODE_TAG is unique , use CHECK_NODE_TAG_DUPLICATE = false to bypass
 bool registered = false;
@@ -137,16 +137,14 @@ void setup(void) {
 	displayLib.printTemplate();
 
 	if (WiFi.status() == WL_CONNECTED) {
-		if (CHECK_NODE_TAG_DUPLICATE) {
-			registered = apiHandler.registerNodeTag(
-					NODE_TAG,
-					API_GATEWAY_URL,
-					API_GATEWAY_BASIC_AUTH_USER,
-					API_GATEWAY_BASIC_AUTH_PASSWORD
-			);
-		} else {
-			registered = true;
-		}
+	    registered = apiHandler.registerNodeTag(
+    					NODE_TAG,
+    					API_GATEWAY_URL,
+    					API_GATEWAY_BASIC_AUTH_USER,
+    					API_GATEWAY_BASIC_AUTH_PASSWORD);
+    }
+	if (CHECK_NODE_TAG_DUPLICATE == false) {
+		registered = true;
 	}
 
 	// MQTT connexion
