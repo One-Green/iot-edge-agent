@@ -32,6 +32,7 @@ bool OGApiHandler::registerNodeTag(
 	http.addHeader("Content-Type", "application/json");
 
 	if ((String(basic_auth).length() > 0) && (String(basic_pwd).length() > 0)) {
+	    Serial.println("Basic auth provided, using user/password ...");
 		String auth = base64::encode(String(basic_auth) + ":" + String(basic_pwd));
 		http.addHeader("Authorization", "Basic " + auth);
 	}
