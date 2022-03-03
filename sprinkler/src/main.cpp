@@ -91,18 +91,16 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 	soil_moisture_min_level = obj[String("soil_moisture_min_level")];
 	soil_moisture_max_level = obj[String("soil_moisture_max_level")];
 
-	if (tag == NODE_TAG) {
-		if (water_valve_signal != last_water_valve_signal) {
-			last_water_valve_signal = water_valve_signal;
-			if (water_valve_signal) {
-				io_handler.openWaterValve();
-				Serial.println("[I/O] Water valve has been OPENED");
-			} else {
-				io_handler.closeWaterValve();
-				Serial.println("[I/O] Water valve has been CLOSED");
-			}
-		}
-	}
+    if (water_valve_signal != last_water_valve_signal) {
+        last_water_valve_signal = water_valve_signal;
+        if (water_valve_signal) {
+            io_handler.openWaterValve();
+            Serial.println("[I/O] Water valve has been OPENED");
+        } else {
+            io_handler.closeWaterValve();
+            Serial.println("[I/O] Water valve has been CLOSED");
+        }
+    }
 }
 
 
