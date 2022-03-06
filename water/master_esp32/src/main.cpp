@@ -91,7 +91,7 @@ void reconnect_mqtt() {
     // Loop until we're reconnected
     while (!client.connected()) {
         Serial.print("[MQTT] Attempting connection... with client name = ");
-        String client_name = String(NODE_TYPE) + "-" + String(NODE_TYPE);
+        String client_name = String(NODE_TYPE) + "-" + String(NODE_TAG);
         int clt_len = client_name.length() + 1;
         char clt_name_char[clt_len];
         client_name.toCharArray(clt_name_char, clt_len);
@@ -154,8 +154,7 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     ctl_tds_level_min = obj[String("tds_min_level")];
     ctl_tds_level_max = obj[String("tds_max_level")];
 
-    if (tag != NODE_TAG) return;
-    
+
     unsigned long timeoutCount = millis();
     bool setPumpState = false;
     bool showMessage = true;
@@ -379,7 +378,7 @@ void testDisplay()
 void setup() {
 
     // Serial Ports Init 
-    Serial.begin(9600);
+    Serial.begin(115200);
     Serial.println("Serial Begin OK");
 
     // init i/o handler
@@ -436,8 +435,8 @@ void loop() {
         //update timer
         pubSensorTimer = millis();
     }
-    else
-        Serial.print("...");
+//    else
+//        Serial.print("...");
 
     // update TFT screen
     //displayLib.updateDisplay(
