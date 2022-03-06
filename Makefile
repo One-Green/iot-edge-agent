@@ -1,3 +1,11 @@
+include .env
+export $(shell sed 's/=.*//' .env)
+
+flash-sprinkler: sprinkler
+	cd sprinkler \
+	&& pio run -t upload \
+	&& pio device monitor -b 115200
+
 flash-water-slave: water/i2c_slave_mega
 	cd water/i2c_slave_mega \
 	&& pio run -t upload --upload-port /dev/tty.usbserial-1410 \

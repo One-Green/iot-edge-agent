@@ -18,7 +18,6 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include "OGDisplay.h"
-#include "OGApiHandler.h"
 #include "OGIO.h"
 #include "Config.h"
 
@@ -39,7 +38,6 @@ int soil_moisture_max_level = 0;
 WiFiClient espClient;
 PubSubClient client(espClient);
 DisplayLib displayLib;
-OGApiHandler apiHandler;
 OGIO io_handler;
 
 // Custom functions
@@ -48,7 +46,7 @@ void reconnect_mqtt() {
 	// Loop until we're reconnected
 	while (!client.connected()) {
 		Serial.print("[MQTT] Attempting connection... with client name = ");
-		String client_name = String(NODE_TYPE) + "-" + String(NODE_TYPE);
+		String client_name = String(NODE_TYPE) + "-" + String(NODE_TAG);
 		int clt_len = client_name.length() + 1;
 		char clt_name_char[clt_len];
 		client_name.toCharArray(clt_name_char, clt_len);
@@ -116,15 +114,12 @@ void setup(void) {
 
 	displayLib.initWifi();
 	Serial.print("[WIFI] Connecting to ");
-	Serial.print(WIFI_SSID);
+	Serial.println(WIFI_SSID);
 	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-
 	while (WiFi.status() != WL_CONNECTED) {
 		Serial.print(".");
 		delay(100);
 	}
-
 	Serial.println("\n");
 	displayLib.connectedWifi();
 	Serial.println("[WIFI] Connected ");
@@ -133,17 +128,6 @@ void setup(void) {
 
 	displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
 	displayLib.printTemplate();
-
-	if (WiFi.status() == WL_CONNECTED) {
-	    registered = apiHandler.registerNodeTag(
-    					NODE_TAG,
-    					API_GATEWAY_URL,
-    					API_GATEWAY_BASIC_AUTH_USER,
-    					API_GATEWAY_BASIC_AUTH_PASSWORD);
-    }
-	if (CHECK_NODE_TAG_DUPLICATE == false) {
-		registered = true;
-	}
 
 	// MQTT connexion
 	client.setServer(MQTT_SERVER, MQTT_PORT);
@@ -158,32 +142,24 @@ void loop() {
 		reconnect_mqtt();
 	}
 	client.loop();
+    int rawSoilMoisture = io_handler.getMoistureLevelADC();
+    int soilMoisture = io_handler.getMoistureLevel(
+            SOIL_MOISTURE_ADC_MIN,
+            SOIL_MOISTURE_ADC_MAX,
+            100, 0);
+    Serial.println("[I/O] Soil moisture ADC=" + String(rawSoilMoisture) + "/" + "LEVEL=" + String(soilMoisture));
+    Serial.print("[MQTT] Sending >> on topic= " + String(SENSOR_TOPIC) + " Influxdb line protocol message: ");
+    String line_proto = io_handler.generateInfluxLineProtocol();
+    Serial.println(line_proto);
+    // convert string to char and publish to mqtt
+    int line_proto_len = line_proto.length() + 1;
+    char line_proto_char[line_proto_len];
+    line_proto.toCharArray(line_proto_char, line_proto_len);
+    client.publish(SENSOR_TOPIC, line_proto_char);
 
-	if (registered) {
-		int rawSoilMoisture = io_handler.getMoistureLevelADC();
-		int soilMoisture = io_handler.getMoistureLevel(
-				SOIL_MOISTURE_ADC_MIN, SOIL_MOISTURE_ADC_MAX,
-				100, 0);
-		Serial.println("[I/O] Soil moisture ADC=" + String(rawSoilMoisture) + "/" + "LEVEL=" + String(soilMoisture));
-		Serial.print("[MQTT] Sending >> on topic= " + String(SENSOR_TOPIC) + " Influxdb line protocol message: ");
-		String line_proto = io_handler.generateInfluxLineProtocol();
-		Serial.println(line_proto);
-		// convert string to char and publish to mqtt
-		int line_proto_len = line_proto.length() + 1;
-		char line_proto_char[line_proto_len];
-		line_proto.toCharArray(line_proto_char, line_proto_len);
-		client.publish(SENSOR_TOPIC, line_proto_char);
-
-		displayLib.updateDisplay(rawSoilMoisture, soilMoisture,
-		                         soil_moisture_min_level, soil_moisture_max_level,
-		                         last_water_valve_signal);
-
-	} else {
-		Serial.println("Not registered, "
-		               "tag is already in database, "
-		               "to bypass change variable  CHECK_NODE_TAG_DUPLICATE to false");
-		displayLib.printRegistryError();
-	}
+    displayLib.updateDisplay(rawSoilMoisture, soilMoisture,
+                             soil_moisture_min_level, soil_moisture_max_level,
+                             last_water_valve_signal);
 
 	delay(500);
 }

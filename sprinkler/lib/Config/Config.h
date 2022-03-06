@@ -38,9 +38,6 @@
 
 // IMPORTANT: Rare case as it's neither int nor string
 // Uncomment below lines if you're sure you'll pass false or true ( without quotes )
-// #ifndef CHECK_NODE_TAG_DUPLICATE
-#define CHECK_NODE_TAG_DUPLICATE false
-// #endif
 
 // MQTT SERVER PARAMETERS
 // #define MQTT_SERVER ""
@@ -55,4 +52,4 @@
 
 // MQTT TOPICS
 #define SENSOR_TOPIC "sprinkler/sensor"
-#define CONTROLLER_TOPIC "sprinkler/controller"
+// #define CONTROLLER_TOPIC "sprinkler/controller"
