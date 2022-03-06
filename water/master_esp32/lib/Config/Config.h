@@ -27,20 +27,9 @@
 #endif
 
 
-// CORE API PARAMETERS
-// #define API_GATEWAY_URL ""
-// #define API_GATEWAY_BASIC_AUTH_USER ""
-// #define API_GATEWAY_BASIC_AUTH_PASSWORD ""
-// REGISTER TAG TO CORE
-// #define NODE_TAG
-
-
 
 // IMPORTANT: Rare case as it's neither int nor string
 // Uncomment below lines if you're sure you'll pass false or true ( without quotes )
-// #ifndef CHECK_NODE_TAG_DUPLICATE
-#define CHECK_NODE_TAG_DUPLICATE false
-// #endif
 
 // MQTT SERVER PARAMETERS
 // #define MQTT_SERVER ""
@@ -55,4 +44,4 @@
 
 // MQTT TOPICS
 #define SENSOR_TOPIC "water/sensor"
-#define CONTROLLER_TOPIC "water/controller"
+// #define CONTROLLER_TOPIC "water/controller"

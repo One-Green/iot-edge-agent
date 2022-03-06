@@ -261,7 +261,7 @@ void requestEvent ()
 void setup() 
 {
   command = 0;
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   Serial.print("Sampling TDS voltage");
   for (byte i=0; i <20; i++)
