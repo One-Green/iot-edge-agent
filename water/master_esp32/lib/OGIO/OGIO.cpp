@@ -5,6 +5,7 @@
 #include "Arduino.h"
 #include "Wire.h"
 #include "OGIO.h"
+#include "Config.h"
 
 const int SLAVE_ADDRESS = 2;
 
@@ -50,17 +51,17 @@ void OGIO::initR(char *nodeTag)
 	OGIO::sendCommand(CMD_IDLE, 1);
 	if (Wire.available())
 	{
-		Serial.print("Slave is ID: ");
-		Serial.println(Wire.read(), DEC);
+		DEBUG_PRINT("Slave is ID: ");
+		DEBUG_PRINTLN(Wire.read(), DEC);
 	}
 	else
-		Serial.println("No response to ID request");
+		DEBUG_PRINTLN("No response to ID request");
 }
 
 void OGIO::sendCommand(const byte cmd, const int responseSize)
 {	
 	delay(50);
-	Serial.println("I2C send command [" + String(cmd) + "]");
+	DEBUG_PRINTLN("I2C send command [" + String(cmd) + "]");
 	Wire.beginTransmission(SLAVE_ADDRESS);
 	Wire.write(cmd);
 	Wire.endTransmission();
@@ -106,7 +107,7 @@ float OGIO::readFloat(const byte cmd)
 
 	// convert to float 
 	float val = atof(resp_buffer);
-	Serial.println("readFloat >> " + String(val));
+	DEBUG_PRINTLN("readFloat >> " + String(val));
 	return val;
 
 }
@@ -116,7 +117,7 @@ byte OGIO::readByte(byte cmd)
 	byte val;
 	OGIO::sendCommand(cmd, 1);
 	val = Wire.read();
-	Serial.println("readByte >> " + String(val));
+	DEBUG_PRINTLN("readByte >> " + String(val));
 	return val;
 }
 

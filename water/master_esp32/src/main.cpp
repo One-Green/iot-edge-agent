@@ -71,18 +71,18 @@ DisplayLib displayLib;
 
 void connectToWiFiNetwork()
 {
-    Serial.print("[WIFI] Connecting to ");
-    Serial.print(WIFI_SSID);
+    DEBUG_PRINT("[WIFI] Connecting to ");
+    DEBUG_PRINT(WIFI_SSID);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
-        Serial.print(".");
+        DEBUG_PRINT(".");
         delay(100);
     }
-    Serial.println("\n");
+    DEBUG_PRINTLN("\n");
     // displayLib.connectedWifi();
-    Serial.println("[WIFI] Connected ");
-    Serial.print("[WIFI] IP address: ");
-    Serial.println(WiFi.localIP());
+    DEBUG_PRINTLN("[WIFI] Connected ");
+    DEBUG_PRINT("[WIFI] IP address: ");
+    DEBUG_PRINTLN(WiFi.localIP());
 }
 
 /* MQTT Functions */
@@ -90,22 +90,22 @@ void connectToWiFiNetwork()
 void reconnect_mqtt() {
     // Loop until we're reconnected
     while (!client.connected()) {
-        Serial.print("[MQTT] Attempting connection... with client name = ");
+        DEBUG_PRINT("[MQTT] Attempting connection... with client name = ");
         String client_name = String(NODE_TYPE) + "-" + String(NODE_TAG);
         int clt_len = client_name.length() + 1;
         char clt_name_char[clt_len];
         client_name.toCharArray(clt_name_char, clt_len);
-        Serial.println(clt_name_char);
+        DEBUG_PRINTLN(clt_name_char);
 
         // Attempt to connect
         if (client.connect(clt_name_char, MQTT_USER, MQTT_PASSWORD)) {
-            Serial.println("[MQTT] Client connected");
+            DEBUG_PRINTLN("[MQTT] Client connected");
             // Subscribe
             client.subscribe(CONTROLLER_TOPIC);
         } else {
-            Serial.print("[MQTT] failed to connect, rc=");
-            Serial.print(client.state());
-            Serial.println("[MQTT] try again in 5 seconds");
+            DEBUG_PRINT("[MQTT] failed to connect, rc=");
+            DEBUG_PRINT(client.state());
+            DEBUG_PRINTLN("[MQTT] try again in 5 seconds");
             // Wait 5 seconds before retrying
             delay(5000);
         }
@@ -120,9 +120,9 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
      * */
     mqttCallbackInError = false;
     subControllerTimer = millis();
-    Serial.print("[MQTT] Receiving << on topic: ");
-    Serial.print(topic);
-    Serial.print(". JSON message: ");
+    DEBUG_PRINT("[MQTT] Receiving << on topic: ");
+    DEBUG_PRINT(topic);
+    DEBUG_PRINT(". JSON message: ");
     String tmpMessage;
 
     for (int i = 0; i < length; i++) {
@@ -133,7 +133,7 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     deserializeJson(doc, tmpMessage);
     JsonObject obj = doc.as<JsonObject>();
     serializeJsonPretty(doc, Serial);
-    Serial.println();
+    DEBUG_PRINTLN();
 
     /* Parse params from MQTT Payload*/
 
@@ -167,11 +167,11 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             while ( (millis() - timeoutCount < 3000 ) && !setPumpState)
             {
                 setPumpState = io_handler.OnWaterPump();
-                if (showMessage)Serial.println("[I/O] Waiting for water pump activation");
+                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for water pump activation");
                 showMessage = false;
                 delay(500);
             }
-            Serial.println("[I/O] Water pump is OPENED");
+            DEBUG_PRINTLN("[I/O] Water pump is OPENED");
         } 
         else //turn-OFF and confirm 
         {
@@ -181,11 +181,11 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             while ((millis() - timeoutCount < 3000 ) && !setPumpState) 
             { 
                 setPumpState = io_handler.OffWaterPump();
-                if (showMessage)Serial.println("[I/O] Waiting for water pump closing");
+                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for water pump closing");
                 showMessage = false;
                 delay(500);
             }
-            Serial.println("[I/O] Water pump is CLOSED");
+            DEBUG_PRINTLN("[I/O] Water pump is CLOSED");
         }
     }
     
@@ -199,11 +199,11 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             while ((millis() - timeoutCount < 3000 ) && !setPumpState)
             {
                 setPumpState = io_handler.OnNutrientPump();
-                if (showMessage)Serial.println("[I/O] Waiting for nutrient pump activation");
+                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for nutrient pump activation");
                 showMessage = false;
                 delay(500);
             }
-            Serial.println("[I/O] Nutrient pump is OPENED");
+            DEBUG_PRINTLN("[I/O] Nutrient pump is OPENED");
         } else {
             timeoutCount = millis();
             setPumpState = false;
@@ -211,11 +211,11 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             while ((millis() - timeoutCount < 3000 ) && !setPumpState)
             {
                 setPumpState = io_handler.OffNutrientPump();
-                if (showMessage)Serial.println("[I/O] Waiting for nutrient pump closing");
+                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for nutrient pump closing");
                 showMessage = false;
                 delay(500);
             }
-            Serial.println("[I/O] Nutrient pump is CLOSED");
+            DEBUG_PRINTLN("[I/O] Nutrient pump is CLOSED");
         }
     }
 
@@ -232,11 +232,11 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             while ((millis() - timeoutCount < 3000 ) && !setPumpState)
             {
                 setPumpState = io_handler.OnPhDownerPump();
-                if (showMessage) Serial.println("[I/O] Waiting for pH downer pump activation");
+                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for pH downer pump activation");
                 showMessage = false;
                 delay(500);
             }
-            Serial.println("[I/O] pH downer pump is OPENED");
+            DEBUG_PRINTLN("[I/O] pH downer pump is OPENED");
         } 
         else
         {
@@ -246,11 +246,11 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             while ((millis() - timeoutCount < 3000 ) && !setPumpState)
             {
                 setPumpState = io_handler.OffPhDownerPump();
-                if (showMessage) Serial.println("[I/O] Waiting for pH downer pump closing");
+                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for pH downer pump closing");
                 showMessage = false;
                 delay(500);
             }
-            Serial.println("[I/O] pH downer pump is CLOSED");
+            DEBUG_PRINTLN("[I/O] pH downer pump is CLOSED");
         }
     }
 
@@ -267,11 +267,11 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             while ((millis() - timeoutCount < 3000 ) && !setPumpState) 
             {
                 setPumpState = io_handler.OnMixerPump();
-                if (showMessage)Serial.println("[I/O] Waiting for mixer pump activation");
+                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for mixer pump activation");
                 showMessage = false;
                 delay(500);
             }
-            Serial.println("[I/O] mixer pump is OPENED");
+            DEBUG_PRINTLN("[I/O] mixer pump is OPENED");
         }
         else
         {
@@ -281,11 +281,11 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
             while ((millis() - timeoutCount < 3000 ) && !setPumpState)
             {
                 setPumpState = io_handler.OffMixerPump();
-                if (showMessage)Serial.println("[I/O] Waiting for mixer pump closing");
+                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for mixer pump closing");
                 showMessage = false;
                 delay(500);
             }
-            Serial.println("[I/O] mixer pump is CLOSED");
+            DEBUG_PRINTLN("[I/O] mixer pump is CLOSED");
         }
     }
 
@@ -294,12 +294,12 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 void pubSensorsVals()
 {
     String line_proto = io_handler.generateInfluxLineProtocol();
-    Serial.println(line_proto);
+    DEBUG_PRINTLN(line_proto);
     // convert string to char and publish to mqtt
     int line_proto_len = line_proto.length() + 1;
     char line_proto_char[line_proto_len];
     line_proto.toCharArray(line_proto_char, line_proto_len);
-    Serial.println("[MQTT] Writing >> on topic " + String(SENSOR_TOPIC));
+    DEBUG_PRINTLN("[MQTT] Writing >> on topic " + String(SENSOR_TOPIC));
     client.publish(SENSOR_TOPIC, line_proto_char);
 }
 
@@ -364,9 +364,9 @@ void testI2Cslave()
     io_handler.OffMixerPump();
     
     String tmp;
-    Serial.println("Generating line protocol string = ");
+    DEBUG_PRINTLN("Generating line protocol string = ");
     tmp = io_handler.generateInfluxLineProtocol();
-    Serial.println(tmp);
+    DEBUG_PRINTLN(tmp);
 
 }
 
@@ -378,8 +378,8 @@ void testDisplay()
 void setup() {
 
     // Serial Ports Init 
-    Serial.begin(115200);
-    Serial.println("Serial Begin OK");
+    INIT_SERIAL(115200);
+    DEBUG_PRINTLN("Serial Begin OK");
 
     // init i/o handler
     io_handler.initR(NODE_TAG);
@@ -422,9 +422,9 @@ void loop() {
     if (client.connected() && (millis() - subControllerTimer > (safetyCloseActuatorSec * 1000)) && mqttCallbackInError == false )
     {
         mqttCallbackInError = true;
-        Serial.println("[MQTT] Warning callback time reached: switch OFF all actuators");
+        DEBUG_PRINTLN("[MQTT] Warning callback time reached: switch OFF all actuators");
         io_handler.safeMode();
-        Serial.println("[MQTT] all actuators OFF");
+        DEBUG_PRINTLN("[MQTT] all actuators OFF");
     }
     
     // Pub sensors every publish_evey (m) and only if the client is connected
@@ -436,7 +436,7 @@ void loop() {
         pubSensorTimer = millis();
     }
 //    else
-//        Serial.print("...");
+//        DEBUG_PRINT("...");
 
     // update TFT screen
     //displayLib.updateDisplay(
