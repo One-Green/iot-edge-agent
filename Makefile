@@ -3,7 +3,7 @@ export $(shell sed 's/=.*//' .env)
 
 flash-sprinkler: sprinkler
 	cd sprinkler \
-	&& pio run -t upload \
+	&& pio run -t upload   \
 	&& pio device monitor -b 115200
 
 flash-water-slave: water/i2c_slave_mega
@@ -11,10 +11,9 @@ flash-water-slave: water/i2c_slave_mega
 	&& pio run -t upload  \
 	&& pio device monitor -b 115200
 
-flash-water-master: export NODE_TAG=water
 flash-water-master: water/master_esp32
 	cd water/master_esp32 \
-	&& pio run -t upload \
+	&& pio run -t upload  \
 	&& pio device monitor -b 115200
 
 mqtt-subscribe-water-sensor:

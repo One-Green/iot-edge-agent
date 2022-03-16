@@ -174,7 +174,7 @@ float OGIO::getPhDownerLevelCM()
 String OGIO::generateInfluxLineProtocol()
 {
 	
-	// read value and save as attibute
+	// read value and save as attribute
 	this->getPhVoltage();
 	this->getTDSVoltage();
 	
