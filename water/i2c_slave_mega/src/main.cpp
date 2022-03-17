@@ -9,6 +9,7 @@ Author: Shanmugathas Vigneswaran
 #include "Wire.h"
 #include "OGIO.h"
 #include "Config.h"
+#include "avr/wdt.h"
 
 const byte I2C_ADDRESS = 2;
 int val ;
@@ -278,6 +279,9 @@ void setup()
   DEBUG_PRINTLN("I2C Salve is up, addr =" + String(I2C_ADDRESS));
   io_handler.initR();     // I/O Arduino mega setup digital pin mode
   lastReceiveEvent = millis();
+
+  // enable watch dog
+  wdt_enable(WDTO_2S);
 }
 
 void safeModHandler()
@@ -307,4 +311,5 @@ void loop()
   delay(50);
   ph_downer_tank_level = io_handler.getPhDownerLevelCM();
   delay(50);
+  wdt_reset();
 }

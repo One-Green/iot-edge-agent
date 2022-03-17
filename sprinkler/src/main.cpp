@@ -14,12 +14,16 @@
  * */
 
 
-#include <WiFi.h>
-#include <ArduinoJson.h>
-#include <PubSubClient.h>
+#include "WiFi.h"
+#include "ArduinoJson.h"
+#include "PubSubClient.h"
 #include "OGDisplay.h"
 #include "OGIO.h"
 #include "Config.h"
+#include "esp_task_wdt.h"
+
+// Watch configuration (in second)
+#define WDT_TIMEOUT 3
 
 // ADC to MAX = 0% and ADC to MIN = 100% calibration
 // Used for mapping
@@ -130,6 +134,11 @@ void setup(void) {
 	client.setServer(MQTT_SERVER, MQTT_PORT);
 	client.setCallback(mqttCallback);
 
+	// enable panic so ESP32 restarts
+    esp_task_wdt_init(WDT_TIMEOUT, true);
+    //add current thread to WDT watch
+    esp_task_wdt_add(NULL);
+
 }
 
 void loop() {
@@ -159,4 +168,6 @@ void loop() {
                              last_water_valve_signal);
 
 	delay(500);
+    // Clear Watch dog
+    esp_task_wdt_reset();
 }

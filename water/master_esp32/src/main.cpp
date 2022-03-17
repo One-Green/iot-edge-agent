@@ -30,7 +30,10 @@
 #include "Config.h"
 #include "OGIO.h"
 #include "OGDisplay.h"
+#include "esp_task_wdt.h"
 
+// Watch configuration (in second)
+#define WDT_TIMEOUT 5
 
 unsigned long pubSensorTimer;
 unsigned long subControllerTimer;
@@ -403,6 +406,11 @@ void setup() {
     /* Init MQTT Pub Sensor Timer */
     pubSensorTimer = millis();
 
+    //enable panic so ESP32 restarts
+    esp_task_wdt_init(WDT_TIMEOUT, true);
+    //add current thread to WDT watch
+    esp_task_wdt_add(NULL);
+
     // for purpose only tests
     // testI2Cslave();
     // testDisplay();
@@ -410,7 +418,7 @@ void setup() {
 
 
 void loop() {
-   
+
     //reconnect MQTT Client if not connected
     if (!client.connected()) {
         reconnect_mqtt();
@@ -428,8 +436,8 @@ void loop() {
     }
     
     // Pub sensors every publish_evey (m) and only if the client is connected
-     if (client.connected() && (millis() - pubSensorTimer > (sensorPubRateSec * 1000)))
-     {
+    if (client.connected() && (millis() - pubSensorTimer > (sensorPubRateSec * 1000)))
+    {
         //send sensors to MQTT Broker
         pubSensorsVals();
         //update timer
@@ -446,4 +454,6 @@ void loop() {
     //  ctl_ph_level_min, ctl_ph_level_max, ctl_tds_level_min, ctl_tds_level_max
     // );
 
+    // Clear Watch dog
+    esp_task_wdt_reset();
 }
