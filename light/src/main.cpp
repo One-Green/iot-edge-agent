@@ -18,17 +18,16 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include "OGDisplay.h"
-#include "OGApiHandler.h"
 #include "OGIO.h"
 #include "Config.h"
+#include "esp_task_wdt.h"
 
-// ensure NODE_TAG is unique , use CHECK_NODE_TAG_DUPLICATE = false to bypass
-bool registered = false;
+// Watch configuration (in second)
+#define WDT_TIMEOUT 3
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 DisplayLib displayLib;
-OGApiHandler apiHandler;
 OGIO io_handler;
 
 bool last_light_signal = false;
@@ -43,22 +42,22 @@ String off_time_at;
 void reconnect_mqtt() {
 	// Loop until we're reconnected
 	while (!client.connected()) {
-		Serial.print("[MQTT] Attempting connection... with client name = ");
+		DEBUG_PRINT("[MQTT] Attempting connection... with client name = ");
 		String client_name = String(NODE_TYPE) + "-" + String(NODE_TYPE);
 		int clt_len = client_name.length() + 1;
 		char clt_name_char[clt_len];
 		client_name.toCharArray(clt_name_char, clt_len);
-		Serial.println(clt_name_char);
+		DEBUG_PRINTLN(clt_name_char);
 
 		// Attempt to connect
 		if (client.connect(clt_name_char, MQTT_USER, MQTT_PASSWORD)) {
-			Serial.println("[MQTT] Client connected");
+			DEBUG_PRINTLN("[MQTT] Client connected");
 			// Subscribe
 			client.subscribe(CONTROLLER_TOPIC);
 		} else {
-			Serial.print("[MQTT] failed, rc=");
-			Serial.print(client.state());
-			Serial.println("[MQTT] try again in 5 seconds");
+			DEBUG_PRINT("[MQTT] failed, rc=");
+			DEBUG_PRINT(client.state());
+			DEBUG_PRINTLN("[MQTT] try again in 5 seconds");
 			// Wait 5 seconds before retrying
 			delay(5000);
 		}
@@ -67,16 +66,16 @@ void reconnect_mqtt() {
 
 
 void mqttCallback(char *topic, byte *message, unsigned int length) {
-	Serial.print("[MQTT] Receiving << on topic: ");
-	Serial.print(topic);
-	Serial.print(". JSON message: ");
+	DEBUG_PRINT("[MQTT] Receiving << on topic: ");
+	DEBUG_PRINT(topic);
+	DEBUG_PRINT(". JSON message: ");
 	String messageTemp;
 
 	for (int i = 0; i < length; i++) {
-		Serial.print((char) message[i]);
+		DEBUG_PRINT((char) message[i]);
 		messageTemp += (char) message[i];
 	}
-	Serial.println();
+	DEBUG_PRINTLN();
 
 	DynamicJsonDocument doc(1024);
 	deserializeJson(doc, messageTemp);
@@ -92,67 +91,54 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 	String tag = obj[String("tag")];
 	bool light_signal = obj[("light_signal")];
 
-	if (tag == NODE_TAG) {
-		if (light_signal != last_light_signal) {
-			last_light_signal = light_signal;
-			if (light_signal) {
-				io_handler.activateLightRelay();
-				Serial.println("[I/O] Light power is ON");
-			} else {
-				io_handler.deactivateLightRelay();
-				Serial.println("[I/O] Light power is OFF");
-			}
-		}
-	}
+    if (light_signal != last_light_signal) {
+        last_light_signal = light_signal;
+        if (light_signal) {
+            io_handler.activateLightRelay();
+            DEBUG_PRINTLN("[I/O] Light power is ON");
+        } else {
+            io_handler.deactivateLightRelay();
+            DEBUG_PRINTLN("[I/O] Light power is OFF");
+        }
+    }
+
 }
 
 
 void setup(void) {
 
-	Serial.begin(115200);
+	INIT_SERIAL(115200);
+
 	displayLib.initR();
 	// set pin mode etc ...
 	io_handler.initR(NODE_TAG);
-
 	delay(1000);
-	Serial.println("\n");
+	DEBUG_PRINTLN("\n");
 
 	displayLib.initWifi();
-	Serial.print("[WIFI] Connecting to ");
-	Serial.print(WIFI_SSID);
+	DEBUG_PRINT("[WIFI] Connecting to ");
+	DEBUG_PRINT(WIFI_SSID);
 	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-
 	while (WiFi.status() != WL_CONNECTED) {
-		Serial.print(".");
+		DEBUG_PRINT(".");
 		delay(100);
 	}
-
-	Serial.println("\n");
+	DEBUG_PRINTLN("\n");
 	displayLib.connectedWifi();
-	Serial.println("[WIFI] Connected ");
-	Serial.print("[WIFI] IP address: ");
-	Serial.println(WiFi.localIP());
-
+	DEBUG_PRINTLN("[WIFI] Connected ");
+	DEBUG_PRINT("[WIFI] IP address: ");
+	DEBUG_PRINTLN(WiFi.localIP());
 	displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
 	displayLib.printTemplate();
-
-	if (WiFi.status() == WL_CONNECTED) {
-		if (CHECK_NODE_TAG_DUPLICATE) {
-			registered = apiHandler.registerNodeTag(
-					NODE_TAG,
-					API_GATEWAY_URL,
-					API_GATEWAY_BASIC_AUTH_USER,
-					API_GATEWAY_BASIC_AUTH_PASSWORD
-			);
-		} else {
-			registered = true;
-		}
-	}
 
 	// MQTT connexion
 	client.setServer(MQTT_SERVER, MQTT_PORT);
 	client.setCallback(mqttCallback);
+
+    // enable panic so ESP32 restarts
+    esp_task_wdt_init(WDT_TIMEOUT, true);
+    //add current thread to WDT watch
+    esp_task_wdt_add(NULL);
 
 }
 
@@ -164,24 +150,8 @@ void loop() {
 	}
 	client.loop();
 
-	if (registered) {
-		String line_proto = io_handler.generateInfluxLineProtocol();
-		Serial.println(line_proto);
-		// convert string to char and publish to mqtt
-		int line_proto_len = line_proto.length() + 1;
-		char line_proto_char[line_proto_len];
-		line_proto.toCharArray(line_proto_char, line_proto_len);
-		client.publish(SENSOR_TOPIC, line_proto_char);
-
-//
-//		displayLib.updateDisplay();
-
-	} else {
-		Serial.println("Not registered, "
-		               "tag is already in database, "
-		               "to bypass change variable  CHECK_NODE_TAG_DUPLICATE to false");
-		displayLib.printRegistryError();
-	}
 
 	delay(500);
+    // Clear Watch dog
+    esp_task_wdt_reset();
 }

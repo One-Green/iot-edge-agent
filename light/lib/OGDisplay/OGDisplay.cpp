@@ -22,6 +22,7 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RS
 void DisplayLib::initR() {
 
 	tft.initR(INITR_BLACKTAB);
+	tft.setRotation(2);
 	tft.fillScreen(ST7735_BLACK);
 	delay(500);
 	// large block of text
