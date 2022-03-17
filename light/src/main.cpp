@@ -14,9 +14,9 @@
  * */
 
 
-#include <WiFi.h>
-#include <ArduinoJson.h>
-#include <PubSubClient.h>
+#include "WiFi.h"
+#include "ArduinoJson.h"
+#include "PubSubClient.h"
 #include "OGDisplay.h"
 #include "OGIO.h"
 #include "Config.h"
@@ -88,7 +88,6 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     on_time_at = obj["on_time_at"].as<String>();
     off_time_at = obj["off_time_at"].as<String>();
 
-	String tag = obj[String("tag")];
 	bool light_signal = obj[("light_signal")];
 
     if (light_signal != last_light_signal) {
@@ -150,6 +149,26 @@ void loop() {
 	}
 	client.loop();
 
+    float lux = io_handler.getBH1750LuxLevel() ;
+    int phr = io_handler.getPhotoResistorADC() ;
+    DEBUG_PRINTLN("[I/O] Photo resistor ADC=" + String(phr));
+    DEBUG_PRINT("[MQTT] Sending >> on topic= " + String(SENSOR_TOPIC) + " Influxdb line protocol message: ");
+    String line_proto = io_handler.generateInfluxLineProtocol();
+    DEBUG_PRINTLN(line_proto);
+
+    // convert string to char and publish to mqtt
+    int line_proto_len = line_proto.length() + 1;
+    char line_proto_char[line_proto_len];
+    line_proto.toCharArray(line_proto_char, line_proto_len);
+    client.publish(SENSOR_TOPIC, line_proto_char);
+
+    displayLib.updateDisplay(
+        true,
+        false,
+        "12:30",
+        "14:30",
+        true
+    );
 
 	delay(500);
     // Clear Watch dog

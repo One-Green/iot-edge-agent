@@ -25,7 +25,6 @@ void DisplayLib::initR() {
 	tft.setRotation(2);
 	tft.fillScreen(ST7735_BLACK);
 	delay(500);
-	// large block of text
 	tft.fillScreen(ST7735_BLACK);
 	drawtext("Screen initialised", ST7735_WHITE);
 
@@ -80,45 +79,55 @@ void DisplayLib::printHeader(
 void DisplayLib::printTemplate() {
 	// print node tag
 	tft.setCursor(2, 50);
-	tft.print("Moisture (Raw): ");
+	tft.print("Default cfg: ");
 	tft.setCursor(2, 60);
-	tft.print("Moisture (%)  : ");
+	tft.print("Planner cfg: ");
 	tft.setCursor(2, 70);
-	tft.print("Config Min (%): ");
+	tft.print("On at: ");
 	tft.setCursor(2, 80);
-	tft.print("Config Max (%): ");
+	tft.print("Off at: ");
 	tft.setCursor(2, 90);
-	tft.print("Valve status  : ");
+	tft.print("Light status  : ");
 }
 
 
 void DisplayLib::updateDisplay(
-		float moistureLevelADC,
-		float moistureLevel,
-		float configMin,
-		float configMax,
-		bool water_valve_signal){
+		bool defaultCfg,
+		bool plannerCfg,
+		String onAt,
+		String OffAt,
+		bool LightStatus){
 
 	tft.fillRect(90, 50, 128, 50, ST7735_GREEN);
 
 	tft.setCursor(95, 50);
-	tft.print((int) moistureLevelADC);
+	if (defaultCfg) {
+    		tft.print("ON");
+    	}
+    else {
+        tft.print("OFF");
+    }
 
 	tft.setCursor(95, 60);
-	tft.print((int) moistureLevel);
+    if (plannerCfg){
+        tft.print("ON");
+        }
+    else {
+        tft.print("OFF");
+    }
 
 	tft.setCursor(95, 70);
-	tft.print((int) configMin);
+	tft.print(onAt);
 
 	tft.setCursor(95, 80);
-	tft.print((int) configMax);
+	tft.print(OffAt);
 
 	tft.setCursor(95, 90);
-	if (water_valve_signal){
-		tft.print("OPEN");
+	if (LightStatus) {
+		tft.print("ON");
 	}
-	else{
-		tft.print("CLOSE");
+	else {
+		tft.print("OFF");
 	}
 
 }
@@ -130,22 +139,6 @@ void DisplayLib::drawtext(char *text, uint16_t color) {
 	tft.setTextWrap(true);
 	tft.print(text);
 }
-
-
-void DisplayLib::printRegistryError() {
-	String message = "Not registered, "
-	                 "tag is already in database, "
-	                 "to bypass change variable  CHECK_NODE_TAG_DUPLICATE to false";
-	tft.fillRect(0, 50, 128, 160, ST7735_RED);
-	tft.setCursor(0, 50);
-	tft.print(message);
-	delay(500);
-	tft.fillRect(0, 50, 128, 160, ST7735_YELLOW);
-	tft.setCursor(0, 50);
-	tft.print(message);
-	delay(500);
-}
-
 
 String DisplayLib::ip2Str(IPAddress ip) {
 	// took from https://gist.github.com/loosak/76019faaefd5409fca67
@@ -164,11 +157,11 @@ void DisplayLib::uptime()
 	long mins=0;
 	long secs=0;
 	secs = millis()/1000;
-	mins=secs/60; //convert seconds to minutes
-	hours=mins/60; //convert minutes to hours
-	days=hours/24; //convert hours to days
-	secs=secs-(mins*60); //subtract the coverted seconds to minutes in order to display 59 secs max
-	mins=mins-(hours*60); //subtract the coverted minutes to hours in order to display 59 minutes max
-	hours=hours-(days*24); //subtract the coverted hours to days in order to display 23 hours max
+	mins = secs/60; //convert seconds to minutes
+	hours = mins/60; //convert minutes to hours
+	days = hours/24; //convert hours to days
+	secs = secs-(mins*60); //subtract the converted seconds to minutes in order to display 59 secs max
+	mins = mins-(hours*60); //subtract the converted minutes to hours in order to display 59 minutes max
+	hours = hours-(days*24); //subtract the converted hours to days in order to display 23 hours max
 
 }
