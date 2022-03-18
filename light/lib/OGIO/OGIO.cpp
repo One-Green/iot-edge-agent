@@ -89,7 +89,9 @@ String OGIO::generateInfluxLineProtocol() {
 
 	String lineProtoStr =
 			"light,tag=" + String(nodeTag)
-			+ " lux=" + String(lux)+","
-			+ "photo_res_raw=" + String(photo_res_raw)+"i";
+			+ " lux_lvl=" + String(lux)+","
+			+ "photo_res_raw=" + String(photo_res_raw)+","
+			+ "photo_res_perc=" + String((int) photo_res_raw)+"i";
+
 	return lineProtoStr ;
 }

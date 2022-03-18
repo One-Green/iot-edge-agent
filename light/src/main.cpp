@@ -32,9 +32,10 @@ OGIO io_handler;
 
 bool last_light_signal = false;
 // information in JSON, callback topic CONTROLLER_TOPIC
-String tz;
-String on_time_at;
-String off_time_at;
+String cfg_type;
+bool light_signal = false ;
+String on_at;
+String off_at;
 
 
 // Custom functions
@@ -84,11 +85,10 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     // collect one-green core information
     // https://arduinojson.org/v6/error/ambiguous-overload-for-operator-equal/
     // use as<String>() to avoid ambiguous overload
-    tz = obj["tz"].as<String>();
-    on_time_at = obj["on_time_at"].as<String>();
-    off_time_at = obj["off_time_at"].as<String>();
-
-	bool light_signal = obj[("light_signal")];
+    on_at = obj["on_at"].as<String>();
+    off_at = obj["off_at"].as<String>();
+    cfg_type = obj["cfg_type"].as<String>();
+	light_signal = obj[("light_signal")];
 
     if (light_signal != last_light_signal) {
         last_light_signal = light_signal;
@@ -163,14 +163,16 @@ void loop() {
     client.publish(SENSOR_TOPIC, line_proto_char);
 
     displayLib.updateDisplay(
-        true,
-        false,
-        "12:30",
-        "14:30",
-        true
-    );
+               		cfg_type,
+               		on_at,
+               		off_at,
+               		10.10,
+               		phr,
+               		phr,
+               		light_signal
+               		);
 
-	delay(500);
+    delay(500);
     // Clear Watch dog
     esp_task_wdt_reset();
 }

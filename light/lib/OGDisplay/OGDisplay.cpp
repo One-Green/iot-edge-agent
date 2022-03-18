@@ -79,50 +79,53 @@ void DisplayLib::printHeader(
 void DisplayLib::printTemplate() {
 	// print node tag
 	tft.setCursor(2, 50);
-	tft.print("Default cfg: ");
+	tft.print("Cfg: ");
 	tft.setCursor(2, 60);
-	tft.print("Planner cfg: ");
-	tft.setCursor(2, 70);
 	tft.print("On at: ");
-	tft.setCursor(2, 80);
+	tft.setCursor(2, 70);
 	tft.print("Off at: ");
+	tft.setCursor(2, 80);
+	tft.print("Lux lvl:");
 	tft.setCursor(2, 90);
-	tft.print("Light status  : ");
+	tft.print("P.res RAW");
+	tft.setCursor(2, 100);
+    tft.print("P.res %");
+    tft.setCursor(2, 110);
+    tft.print("Light status");
 }
 
 
 void DisplayLib::updateDisplay(
-		bool defaultCfg,
-		bool plannerCfg,
+		String cfgType,
 		String onAt,
 		String OffAt,
-		bool LightStatus){
+		float LuxLevel,
+		int PhotoResistorRaw,
+		int PhotoResistorPercent,
+		bool LightStatus
+		){
 
-	tft.fillRect(90, 50, 128, 50, ST7735_GREEN);
+	tft.fillRect(80, 50, 128, 160, ST7735_GREEN);
 
-	tft.setCursor(95, 50);
-	if (defaultCfg) {
-    		tft.print("ON");
-    	}
-    else {
-        tft.print("OFF");
-    }
+	tft.setCursor(80, 50);
+    tft.print(cfgType);
 
-	tft.setCursor(95, 60);
-    if (plannerCfg){
-        tft.print("ON");
-        }
-    else {
-        tft.print("OFF");
-    }
-
-	tft.setCursor(95, 70);
+	tft.setCursor(80, 60);
 	tft.print(onAt);
 
-	tft.setCursor(95, 80);
+	tft.setCursor(80, 70);
 	tft.print(OffAt);
 
-	tft.setCursor(95, 90);
+    tft.setCursor(80, 80);
+    tft.print((int) LuxLevel);
+
+    tft.setCursor(80, 90);
+    tft.print(PhotoResistorRaw);
+
+    tft.setCursor(80, 100);
+    tft.print(PhotoResistorPercent);
+
+	tft.setCursor(80, 110);
 	if (LightStatus) {
 		tft.print("ON");
 	}

@@ -11,11 +11,14 @@ public:
 	String ip2Str(IPAddress ip);
 	void printTemplate();
 	void updateDisplay(
-         		bool defaultCfg,
-         		bool plannerCfg,
+         		String cfgType,
          		String onAt,
          		String OffAt,
-         		bool LightStatus);
+         		float LuxLevel,
+         		int PhotoResistorRaw,
+         		int PhotoResistorPercent,
+         		bool LightStatus
+         		);
 	void printRegistryError();
 	void uptime();
 
