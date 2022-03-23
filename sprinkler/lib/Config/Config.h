@@ -20,7 +20,7 @@
 #endif
 
 
-#define NODE_TYPE "water"
+#define NODE_TYPE "sprinkler"
 
 // WIFI Parameters
 #ifndef WIFI_SSID
