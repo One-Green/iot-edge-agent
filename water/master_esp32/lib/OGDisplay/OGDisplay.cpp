@@ -1,10 +1,9 @@
-#include "Arduino.h"
 #include "SPI.h"
-#include "TFT_eSPI.h" // Hardware-specific library
+#include "TFT_eSPI.h"
 #include "OGDisplay.h"
 
-#define SCREENWIDTH 320
-#define SCREENHEIGHT 240
+#define SCREENWIDTH 480
+#define SCREENHEIGHT 320
 
 #define BGCOLOR    0xAD75
 #define GRIDCOLOR  0xA815
@@ -18,21 +17,24 @@
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 void DisplayLib::initR() {
-	tft.begin();
-  	tft.setRotation(1);
- 	tft.fillScreen(TFT_BLACK);
-  	tft.setTextColor(TFT_RED, TFT_BLACK);
-  	tft.drawString("Init screen", 50, 5, 4);
+    tft.begin();
+    tft.setRotation(1);
+    tft.fillScreen(WHITE);
+
+    tft.setCursor(0, 0, 2);
+    tft.setTextColor(TFT_BLACK,WHITE);
+    tft.setTextSize(2);
+    tft.println("Screen initialised");
 }
 
 
 void DisplayLib::initWifi() {
-	// drawtext("Connecting to WIFI", WHITE);
+    tft.println("Connecting to WIFI");
 }
 
 
 void DisplayLib::connectedWifi() {
-	//drawtext("Connected to WIFI", WHITE);
+	tft.println("Connected to WIFI");
 }
 
 
@@ -40,49 +42,51 @@ void DisplayLib::printHeader(
 		char *wifiSsid,
 		IPAddress ip,
 		char *nodeType,
-		char *nodeTag) {
-	//tft.fillRect(0, 0, 128, 50, WHITE);
-	//tft.fillRect(0, 50, 128, 160, TFT_GREEN);
-	// tft.setTextColor(ST7735_BLACK);
+		char *nodeTag
+		)
+{
 
-	// print wifi SSID
-	tft.setCursor(2, 2);
-	tft.print("WIFI: ");
-	tft.setCursor(35, 2);
-	String ssid = String(wifiSsid);
-	if (ssid.length() > 15) {
-		ssid = ssid.substring(0, 12) + "...";
-	}
-	tft.print(ssid);
+    tft.fillRect(0, 0, SCREENWIDTH, 60, TFT_WHITE);
+    tft.fillRect(0, 60, SCREENWIDTH, SCREENHEIGHT, TFT_GREEN);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_BLACK);
 
-	// print IP
-	tft.setCursor(2, 10);
-	tft.print("IP: " + ip2Str(ip));
+    // print wifi SSID
+    tft.setCursor(2, 2);
+    tft.print("WIFI: ");
+    tft.setCursor(35, 2);
+    String ssid = String(wifiSsid);
+    tft.print(ssid);
 
-	// print node type
-	tft.setCursor(2, 20);
-	tft.print("Node Type: ");
-	tft.print(nodeType);
+    // print IP
+    tft.setCursor(2, 15);
+    tft.print("IP: " + ip2Str(ip));
 
-	// print node tag
-	tft.setCursor(2, 30);
-	tft.print("Node Tag: ");
-	tft.print(nodeTag);
+    // print node type
+    tft.setCursor(2, 30);
+    tft.print("Node Type: ");
+    tft.print(nodeType);
+
+    // print node tag
+    tft.setCursor(2, 45);
+    tft.print("Node Tag: ");
+    tft.print(nodeTag);
+
 }
 
 
 void DisplayLib::printTemplate() {
 	// print node tag
-	tft.setCursor(2, 50);
-	tft.print("Moisture (Raw): ");
-	tft.setCursor(2, 60);
-	tft.print("Moisture (%)  : ");
-	tft.setCursor(2, 70);
-	tft.print("Config Min (%): ");
-	tft.setCursor(2, 80);
-	tft.print("Config Max (%): ");
-	tft.setCursor(2, 90);
-	tft.print("Valve status  : ");
+//	tft.setCursor(2, 50);
+//	tft.print("Moisture (Raw): ");
+//	tft.setCursor(2, 60);
+//	tft.print("Moisture (%)  : ");
+//	tft.setCursor(2, 70);
+//	tft.print("Config Min (%): ");
+//	tft.setCursor(2, 80);
+//	tft.print("Config Max (%): ");
+//	tft.setCursor(2, 90);
+//	tft.print("Valve status  : ");
 }
 
 
@@ -123,21 +127,6 @@ void DisplayLib::drawtext(char *text, uint16_t color) {
 	tft.setTextColor(color);
 	tft.setTextWrap(true);
 	tft.print(text);
-}
-
-
-void DisplayLib::printRegistryError() {
-	String message = "Not registered, "
-	                 "tag is already in database, "
-	                 "to bypass change variable  CHECK_NODE_TAG_DUPLICATE to false";
-	// tft.fillRect(0, 50, 128, 160, ST7735_RED);
-	tft.setCursor(0, 50);
-	tft.print(message);
-	delay(500);
-	// tft.fillRect(0, 50, 128, 160, ST7735_YELLOW);
-	tft.setCursor(0, 50);
-	tft.print(message);
-	delay(500);
 }
 
 
