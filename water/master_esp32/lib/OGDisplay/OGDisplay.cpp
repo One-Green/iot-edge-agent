@@ -87,12 +87,12 @@ void DisplayLib::printTemplate() {
     tft.print("pH dwn. tk (cm): ");
 
     tft.setCursor(2, 105);
-    tft.print("TDS raw adc: ");
+    tft.print("TDS (V): ");
     tft.setCursor(2, 120);
     tft.print("TDS (ppm): ");
 
     tft.setCursor(2, 135);
-    tft.print("pH raw adc: ");
+    tft.print("pH (V): ");
     tft.setCursor(2, 150);
     tft.print("pH value: ");
 
@@ -130,12 +130,28 @@ void DisplayLib::updateDisplay(
 		int water_tank_lvl_cm,
 		int nutrient_tank_lvl_cm,
 		int ph_downer_tank_lvl_cm,
-		bool water_pump_status){
+		float tds_voltage,
+		float tds_ppm,
+		float ph_voltage,
+		float ph,
+		bool water_pump_status,
+		bool nutrient_pump_status,
+		bool ph_downer_pump_status,
+		bool mixer_pump_status,
 
+		int connected_sprinkler,
+		float tds_min,
+		float tds_max,
+		float ph_min,
+		float ph_max
+		)
+		{
 
+    // flush values
     tft.fillRect(150, 60, 85, SCREENHEIGHT, TFT_GREEN);
     tft.fillRect(390, 60, 85, SCREENHEIGHT, TFT_GREEN);
 
+    // left pan
     tft.setCursor(152, 60);
     tft.print(water_tank_lvl_cm);
 
@@ -144,6 +160,62 @@ void DisplayLib::updateDisplay(
 
     tft.setCursor(152, 90);
     tft.print(ph_downer_tank_lvl_cm);
+
+    tft.setCursor(152, 105);
+    tft.print(tds_voltage);
+    tft.setCursor(152, 120);
+    tft.print(tds_ppm);
+
+    tft.setCursor(152, 135);
+    tft.print(ph_voltage);
+    tft.setCursor(152, 150);
+    tft.print(ph);
+
+    tft.setCursor(152, 165);
+    if (water_pump_status){
+        tft.print("OPEN");
+    }
+    else{
+        tft.print("CLOSE");
+    }
+
+    tft.setCursor(152, 180);
+    if (nutrient_pump_status){
+        tft.print("OPEN");
+    }
+    else{
+        tft.print("CLOSE");
+    }
+
+    tft.setCursor(152, 195);
+    if (ph_downer_pump_status){
+        tft.print("OPEN");
+    }
+    else{
+        tft.print("CLOSE");
+    }
+
+    tft.setCursor(152, 210);
+    if (mixer_pump_status){
+        tft.print("OPEN");
+    }
+    else{
+        tft.print("CLOSE");
+    }
+
+    // right pan
+    tft.setCursor(392, 60);
+    tft.print(connected_sprinkler);
+
+    tft.setCursor(392, 75);
+    tft.print(tds_min);
+    tft.setCursor(392, 90);
+    tft.print(tds_max);
+
+    tft.setCursor(392, 105);
+    tft.print(ph_min);
+    tft.setCursor(392, 120);
+    tft.print(ph_max);
 
 }
 

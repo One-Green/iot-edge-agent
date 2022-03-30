@@ -46,10 +46,11 @@ bool ctl_water_pump = false;
 bool ctl_nutrient_pump = false;
 bool ctl_ph_downer_pump = false;
 bool ctl_mixer_pump = false;
-int ctl_ph_level_min = 0;
-int ctl_ph_level_max = 0;
-int ctl_tds_level_min = 0;
-int ctl_tds_level_max = 0;
+float ctl_ph_level_min = 0;
+float ctl_ph_level_max = 0;
+float ctl_tds_level_min = 0;
+float ctl_tds_level_max = 0;
+int linked_sprinkler = 0 ;
 
 // ----------------------------------   // Sensors Regs Values
 int water_level_cm = 0;
@@ -139,24 +140,21 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     DEBUG_PRINTLN();
 
     /* Parse params from MQTT Payload*/
-
-    //Parsing Tag param
-    String tag = obj[String("tag")];
-
     //Parsing Water Pumps param
-    ctl_water_pump = obj[String("water_pump_signal")];
+    ctl_water_pump = obj[String("p1")];
     //Parsing Nutrient Pumps param
-    ctl_nutrient_pump = obj[String("nutrient_pump_signal")];
+    ctl_nutrient_pump = obj[String("p2")];
     //Parsing PH Downer Pumps param
-    ctl_ph_downer_pump = obj[String("ph_downer_pump_signal")];
+    ctl_ph_downer_pump = obj[String("p3")];
     // Parsing PH Downer Pumps param
-    ctl_mixer_pump = obj[String("mixer_pump_signal")];
+    ctl_mixer_pump = obj[String("p5")];
 
-    ctl_ph_level_min = obj[String("ph_min_level")];
-    ctl_ph_level_max = obj[String("ph_max_level")];
-    ctl_tds_level_min = obj[String("tds_min_level")];
-    ctl_tds_level_max = obj[String("tds_max_level")];
+    ctl_ph_level_min = obj[String("pmin")];
+    ctl_ph_level_max = obj[String("pmax")];
+    ctl_tds_level_min = obj[String("tmin")];
+    ctl_tds_level_max = obj[String("tmax")];
 
+    linked_sprinkler = obj[String("spc")];
 
     unsigned long timeoutCount = millis();
     bool setPumpState = false;
@@ -389,15 +387,16 @@ void setup() {
     io_handler.safeMode();
 
     // Display Init
-    // displayLib.initR();
-    // displayLib.initWifi();
+    displayLib.initR();
+    displayLib.initWifi();
 
     // Connect to WiFi 
-    connectToWiFiNetwork();
+     connectToWiFiNetwork();
+     displayLib.connectedWifi();
 
     // Display WiFi Info
-    // displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
-    // displayLib.printTemplate();
+    displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
+    displayLib.printTemplate();
 
     /* MQTT connexion */
     client.setServer(MQTT_SERVER, MQTT_PORT);
@@ -442,18 +441,32 @@ void loop() {
         pubSensorsVals();
         //update timer
         pubSensorTimer = millis();
+        Serial.println(CONTROLLER_TOPIC);
     }
 //    else
 //        DEBUG_PRINT("...");
 
-    // update TFT screen
-    //displayLib.updateDisplay(
-    //  water_level_cm, nutrient_level_cm, ph_downer_level_cm,
-    //   ph_level, tds_level, last_water_pump_state, last_nutrient_pump_state,
-    //  last_ph_downer_pump_state, last_mixer_pump_state,
-    //  ctl_ph_level_min, ctl_ph_level_max, ctl_tds_level_min, ctl_tds_level_max
-    // );
+    displayLib.updateDisplay(
+        io_handler.WaterTankLevel,
+        io_handler.NutrientTankLevel,
+        io_handler.PHTankLevel,
+        io_handler.TDSVoltage,
+        io_handler.TDS,
+        io_handler.phVoltage,
+        io_handler.pH,
+        io_handler.getWaterPumpStatus(),
+        io_handler.getNutrientPumpStatus(),
+        io_handler.getPhDownerPumpStatus(),
+        io_handler.getMixerPumpStatus(),
+        linked_sprinkler,
+        ctl_tds_level_min,
+        ctl_tds_level_max,
+        ctl_ph_level_min,
+        ctl_ph_level_max
+        );
 
     // Clear Watch dog
     esp_task_wdt_reset();
+
+    delay(200);
 }
