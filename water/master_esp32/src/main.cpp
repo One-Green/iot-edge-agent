@@ -147,7 +147,7 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     //Parsing PH Downer Pumps param
     ctl_ph_downer_pump = obj[String("p3")];
     // Parsing PH Downer Pumps param
-    ctl_mixer_pump = obj[String("p5")];
+    ctl_mixer_pump = obj[String("p4")];
 
     ctl_ph_level_min = obj[String("pmin")];
     ctl_ph_level_max = obj[String("pmax")];
