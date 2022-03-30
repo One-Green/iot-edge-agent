@@ -1,14 +1,8 @@
-#include "Arduino.h"
-#include "SPI.h"
-#include "WiFi.h"
-
 class DisplayLib {
 
 public:
 	// constructor
 	void initR();
-
-	void drawtext(char *text, uint16_t color);
 
 	void initWifi();
 
@@ -20,11 +14,11 @@ public:
 
 	void printTemplate();
 
-	void updateDisplay(float moistureLevelADC, float moistureLevel,
-					float configMin, float configMax ,
-					bool water_valve_signal);
-
-	void printRegistryError();
+	void updateDisplay(
+         		int water_tank_lvl_cm,
+         		int nutrient_tank_lvl_cm,
+         		int ph_downer_tank_lvl_cm,
+         		bool water_pump_status);
 
 	void uptime();
 

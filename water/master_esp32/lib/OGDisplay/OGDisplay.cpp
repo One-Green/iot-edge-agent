@@ -76,57 +76,75 @@ void DisplayLib::printHeader(
 
 
 void DisplayLib::printTemplate() {
-	// print node tag
-//	tft.setCursor(2, 50);
-//	tft.print("Moisture (Raw): ");
-//	tft.setCursor(2, 60);
-//	tft.print("Moisture (%)  : ");
-//	tft.setCursor(2, 70);
-//	tft.print("Config Min (%): ");
-//	tft.setCursor(2, 80);
-//	tft.print("Config Max (%): ");
-//	tft.setCursor(2, 90);
-//	tft.print("Valve status  : ");
+
+    tft.setCursor(2, 60);
+    tft.print("Water tk (cm): ");
+
+    tft.setCursor(2, 75);
+    tft.print("Nutr. tk (cm): ");
+
+    tft.setCursor(2, 90);
+    tft.print("pH dwn. tk (cm): ");
+
+    tft.setCursor(2, 105);
+    tft.print("TDS raw adc: ");
+    tft.setCursor(2, 120);
+    tft.print("TDS (ppm): ");
+
+    tft.setCursor(2, 135);
+    tft.print("pH raw adc: ");
+    tft.setCursor(2, 150);
+    tft.print("pH value: ");
+
+    tft.setCursor(2, 165);
+    tft.print("Water pump status: ");
+
+    tft.setCursor(2, 180);
+    tft.print("Nutrient pump status: ");
+
+    tft.setCursor(2, 195);
+    tft.print("pH Downer pump status: ");
+
+    tft.setCursor(2, 210);
+    tft.print("Mixer pump status: ");
+
+    tft.drawLine(SCREENWIDTH/2,60,SCREENWIDTH/2,SCREENHEIGHT,TFT_BLACK);
+
+    tft.setCursor(245, 60);
+    tft.print("Connected sprinklers: ");
+
+    tft.setCursor(245, 75);
+    tft.print("TDS config min (ppm): ");
+    tft.setCursor(245, 90);
+    tft.print("TDS config max (ppm): ");
+
+    tft.setCursor(245, 105);
+    tft.print("pH config min: ");
+    tft.setCursor(245, 120);
+    tft.print("pH config max: ");
+
 }
 
 
 void DisplayLib::updateDisplay(
-		float moistureLevelADC,
-		float moistureLevel,
-		float configMin,
-		float configMax,
-		bool water_valve_signal){
+		int water_tank_lvl_cm,
+		int nutrient_tank_lvl_cm,
+		int ph_downer_tank_lvl_cm,
+		bool water_pump_status){
 
-	// tft.fillRect(90, 50, 128, 50, ST7735_GREEN);
 
-	tft.setCursor(95, 50);
-	tft.print((int) moistureLevelADC);
+    tft.fillRect(150, 60, 85, SCREENHEIGHT, TFT_GREEN);
+    tft.fillRect(390, 60, 85, SCREENHEIGHT, TFT_GREEN);
 
-	tft.setCursor(95, 60);
-	tft.print((int) moistureLevel);
+    tft.setCursor(152, 60);
+    tft.print(water_tank_lvl_cm);
 
-	tft.setCursor(95, 70);
-	tft.print((int) configMin);
+    tft.setCursor(152, 75);
+    tft.print(nutrient_tank_lvl_cm);
 
-	tft.setCursor(95, 80);
-	tft.print((int) configMax);
+    tft.setCursor(152, 90);
+    tft.print(ph_downer_tank_lvl_cm);
 
-	tft.setCursor(95, 90);
-	if (water_valve_signal){
-		tft.print("OPEN");
-	}
-	else{
-		tft.print("CLOSE");
-	}
-
-}
-
-void DisplayLib::drawtext(char *text, uint16_t color) {
-	//tft.fillScreen(ST7735_BLACK);
-	tft.setCursor(0, 0);
-	tft.setTextColor(color);
-	tft.setTextWrap(true);
-	tft.print(text);
 }
 
 
