@@ -1,10 +1,9 @@
-#include "Arduino.h"
 #include "SPI.h"
-#include "TFT_eSPI.h" // Hardware-specific library
+#include "TFT_eSPI.h"
 #include "OGDisplay.h"
 
-#define SCREENWIDTH 320
-#define SCREENHEIGHT 240
+#define SCREENWIDTH 480
+#define SCREENHEIGHT 320
 
 #define BGCOLOR    0xAD75
 #define GRIDCOLOR  0xA815
@@ -18,21 +17,24 @@
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 void DisplayLib::initR() {
-	tft.begin();
-  	tft.setRotation(1);
- 	tft.fillScreen(TFT_BLACK);
-  	tft.setTextColor(TFT_RED, TFT_BLACK);
-  	tft.drawString("Init screen", 50, 5, 4);
+    tft.begin();
+    tft.setRotation(1);
+    tft.fillScreen(WHITE);
+
+    tft.setCursor(0, 0, 2);
+    tft.setTextColor(TFT_BLACK,WHITE);
+    tft.setTextSize(2);
+    tft.println("Screen initialised");
 }
 
 
 void DisplayLib::initWifi() {
-	// drawtext("Connecting to WIFI", WHITE);
+    tft.println("Connecting to WIFI");
 }
 
 
 void DisplayLib::connectedWifi() {
-	//drawtext("Connected to WIFI", WHITE);
+	tft.println("Connected to WIFI");
 }
 
 
@@ -40,104 +42,181 @@ void DisplayLib::printHeader(
 		char *wifiSsid,
 		IPAddress ip,
 		char *nodeType,
-		char *nodeTag) {
-	//tft.fillRect(0, 0, 128, 50, WHITE);
-	//tft.fillRect(0, 50, 128, 160, TFT_GREEN);
-	// tft.setTextColor(ST7735_BLACK);
+		char *nodeTag
+		)
+{
 
-	// print wifi SSID
-	tft.setCursor(2, 2);
-	tft.print("WIFI: ");
-	tft.setCursor(35, 2);
-	String ssid = String(wifiSsid);
-	if (ssid.length() > 15) {
-		ssid = ssid.substring(0, 12) + "...";
-	}
-	tft.print(ssid);
+    tft.fillRect(0, 0, SCREENWIDTH, 60, TFT_WHITE);
+    tft.fillRect(0, 60, SCREENWIDTH, SCREENHEIGHT, TFT_GREEN);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_BLACK);
 
-	// print IP
-	tft.setCursor(2, 10);
-	tft.print("IP: " + ip2Str(ip));
+    // print wifi SSID
+    tft.setCursor(2, 2);
+    tft.print("WIFI: ");
+    tft.setCursor(35, 2);
+    String ssid = String(wifiSsid);
+    tft.print(ssid);
 
-	// print node type
-	tft.setCursor(2, 20);
-	tft.print("Node Type: ");
-	tft.print(nodeType);
+    // print IP
+    tft.setCursor(2, 15);
+    tft.print("IP: " + ip2Str(ip));
 
-	// print node tag
-	tft.setCursor(2, 30);
-	tft.print("Node Tag: ");
-	tft.print(nodeTag);
+    // print node type
+    tft.setCursor(2, 30);
+    tft.print("Node Type: ");
+    tft.print(nodeType);
+
+    // print node tag
+    tft.setCursor(2, 45);
+    tft.print("Node Tag: ");
+    tft.print(nodeTag);
+
 }
 
 
 void DisplayLib::printTemplate() {
-	// print node tag
-	tft.setCursor(2, 50);
-	tft.print("Moisture (Raw): ");
-	tft.setCursor(2, 60);
-	tft.print("Moisture (%)  : ");
-	tft.setCursor(2, 70);
-	tft.print("Config Min (%): ");
-	tft.setCursor(2, 80);
-	tft.print("Config Max (%): ");
-	tft.setCursor(2, 90);
-	tft.print("Valve status  : ");
+
+    tft.setCursor(2, 60);
+    tft.print("Water tk (cm): ");
+
+    tft.setCursor(2, 75);
+    tft.print("Nutr. tk (cm): ");
+
+    tft.setCursor(2, 90);
+    tft.print("pH dwn. tk (cm): ");
+
+    tft.setCursor(2, 105);
+    tft.print("TDS (V): ");
+    tft.setCursor(2, 120);
+    tft.print("TDS (ppm): ");
+
+    tft.setCursor(2, 135);
+    tft.print("pH (V): ");
+    tft.setCursor(2, 150);
+    tft.print("pH value: ");
+
+    tft.setCursor(2, 165);
+    tft.print("Water pump status: ");
+
+    tft.setCursor(2, 180);
+    tft.print("Nutrient pump status: ");
+
+    tft.setCursor(2, 195);
+    tft.print("pH Downer pump status: ");
+
+    tft.setCursor(2, 210);
+    tft.print("Mixer pump status: ");
+
+    tft.drawLine(SCREENWIDTH/2,60,SCREENWIDTH/2,SCREENHEIGHT,TFT_BLACK);
+
+    tft.setCursor(245, 60);
+    tft.print("Connected sprinklers: ");
+
+    tft.setCursor(245, 75);
+    tft.print("TDS config min (ppm): ");
+    tft.setCursor(245, 90);
+    tft.print("TDS config max (ppm): ");
+
+    tft.setCursor(245, 105);
+    tft.print("pH config min: ");
+    tft.setCursor(245, 120);
+    tft.print("pH config max: ");
+
 }
 
 
 void DisplayLib::updateDisplay(
-		float moistureLevelADC,
-		float moistureLevel,
-		float configMin,
-		float configMax,
-		bool water_valve_signal){
+		int water_tank_lvl_cm,
+		int nutrient_tank_lvl_cm,
+		int ph_downer_tank_lvl_cm,
+		float tds_voltage,
+		float tds_ppm,
+		float ph_voltage,
+		float ph,
+		bool water_pump_status,
+		bool nutrient_pump_status,
+		bool ph_downer_pump_status,
+		bool mixer_pump_status,
 
-	// tft.fillRect(90, 50, 128, 50, ST7735_GREEN);
+		int connected_sprinkler,
+		float tds_min,
+		float tds_max,
+		float ph_min,
+		float ph_max
+		)
+		{
 
-	tft.setCursor(95, 50);
-	tft.print((int) moistureLevelADC);
+    // flush values
+    tft.fillRect(150, 60, 85, SCREENHEIGHT, TFT_GREEN);
+    tft.fillRect(390, 60, 85, SCREENHEIGHT, TFT_GREEN);
 
-	tft.setCursor(95, 60);
-	tft.print((int) moistureLevel);
+    // left pan
+    tft.setCursor(152, 60);
+    tft.print(water_tank_lvl_cm);
 
-	tft.setCursor(95, 70);
-	tft.print((int) configMin);
+    tft.setCursor(152, 75);
+    tft.print(nutrient_tank_lvl_cm);
 
-	tft.setCursor(95, 80);
-	tft.print((int) configMax);
+    tft.setCursor(152, 90);
+    tft.print(ph_downer_tank_lvl_cm);
 
-	tft.setCursor(95, 90);
-	if (water_valve_signal){
-		tft.print("OPEN");
-	}
-	else{
-		tft.print("CLOSE");
-	}
+    tft.setCursor(152, 105);
+    tft.print(tds_voltage);
+    tft.setCursor(152, 120);
+    tft.print(tds_ppm);
 
-}
+    tft.setCursor(152, 135);
+    tft.print(ph_voltage);
+    tft.setCursor(152, 150);
+    tft.print(ph);
 
-void DisplayLib::drawtext(char *text, uint16_t color) {
-	//tft.fillScreen(ST7735_BLACK);
-	tft.setCursor(0, 0);
-	tft.setTextColor(color);
-	tft.setTextWrap(true);
-	tft.print(text);
-}
+    tft.setCursor(152, 165);
+    if (water_pump_status){
+        tft.print("OPEN");
+    }
+    else{
+        tft.print("CLOSE");
+    }
 
+    tft.setCursor(152, 180);
+    if (nutrient_pump_status){
+        tft.print("OPEN");
+    }
+    else{
+        tft.print("CLOSE");
+    }
 
-void DisplayLib::printRegistryError() {
-	String message = "Not registered, "
-	                 "tag is already in database, "
-	                 "to bypass change variable  CHECK_NODE_TAG_DUPLICATE to false";
-	// tft.fillRect(0, 50, 128, 160, ST7735_RED);
-	tft.setCursor(0, 50);
-	tft.print(message);
-	delay(500);
-	// tft.fillRect(0, 50, 128, 160, ST7735_YELLOW);
-	tft.setCursor(0, 50);
-	tft.print(message);
-	delay(500);
+    tft.setCursor(152, 195);
+    if (ph_downer_pump_status){
+        tft.print("OPEN");
+    }
+    else{
+        tft.print("CLOSE");
+    }
+
+    tft.setCursor(152, 210);
+    if (mixer_pump_status){
+        tft.print("OPEN");
+    }
+    else{
+        tft.print("CLOSE");
+    }
+
+    // right pan
+    tft.setCursor(392, 60);
+    tft.print(connected_sprinkler);
+
+    tft.setCursor(392, 75);
+    tft.print(tds_min);
+    tft.setCursor(392, 90);
+    tft.print(tds_max);
+
+    tft.setCursor(392, 105);
+    tft.print(ph_min);
+    tft.setCursor(392, 120);
+    tft.print(ph_max);
+
 }
 
 

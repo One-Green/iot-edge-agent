@@ -15,7 +15,7 @@ enum
 {
 	CMD_IDLE                      = 0,
 
-  // Sensors repport commands
+  // Sensors report commands
 	CMD_READ_PH_VOLTAGE           = 1,
 	CMD_READ_TDS_VOLTAGE          = 2,
 	CMD_READ_PH                   = 3,

@@ -13,8 +13,8 @@ flash-water-slave: water/i2c_slave_mega
 
 flash-water-master: water/master_esp32
 	cd water/master_esp32 \
-	&& pio run -t upload  \
-	&& pio device monitor -b 115200
+	&& pio run -t upload  # \
+	# && pio device monitor -b 115200
 
 mqtt-subscribe-water-sensor:
 	mqtt sub -h ${MQTT_SERVER} -p ${MQTT_PORT} -u ${MQTT_USER} -pw ${MQTT_PASSWORD} --topic water/sensor

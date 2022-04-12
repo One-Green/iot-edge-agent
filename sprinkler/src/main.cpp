@@ -102,8 +102,10 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     }
 }
 
-
 void setup(void) {
+
+    // idle all actuator
+    io_handler.closeWaterValve();
 
 	INIT_SERIAL(115200);
 	displayLib.initR();
@@ -162,6 +164,11 @@ void loop() {
     char line_proto_char[line_proto_len];
     line_proto.toCharArray(line_proto_char, line_proto_len);
     client.publish(SENSOR_TOPIC, line_proto_char);
+
+    if (soilMoisture >= 100) {
+        io_handler.closeWaterValve();
+        last_water_valve_signal = false;
+    };
 
     displayLib.updateDisplay(rawSoilMoisture, soilMoisture,
                              soil_moisture_min_level, soil_moisture_max_level,
