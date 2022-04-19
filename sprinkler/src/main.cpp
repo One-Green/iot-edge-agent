@@ -22,6 +22,19 @@
 #include "Config.h"
 #include "esp_task_wdt.h"
 
+// State machine implementation :
+enum State {
+    IDLE,
+    WATER,
+    FORCE_NOT_WATER,
+    FORCE_WATER
+};
+static State state = IDLE ;
+unsigned int WATER_VALVE_BOUNCER_DELAY=5 ;
+unsigned int MAX_WATER_PERIOD=5;
+unsigned int idle_time=0;
+unsigned int water_time=0;
+
 // Watch configuration (in second)
 #define WDT_TIMEOUT 3
 
@@ -35,6 +48,10 @@ bool last_water_valve_signal = false;
 int soil_moisture_min_level = 0;
 int soil_moisture_max_level = 0;
 
+// controller signal
+bool water_valve_signal = false;
+bool f_water_valve_signal = false;
+bool f_water_valve_signal_on = false;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -86,20 +103,12 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 	JsonObject obj = doc.as<JsonObject>();
 
 	String tag = obj[String("tag")];
-	bool water_valve_signal = obj[String("water_valve_signal")];
+	water_valve_signal = obj[String("water_valve_signal")];
 	soil_moisture_min_level = obj[String("soil_moisture_min_level")];
 	soil_moisture_max_level = obj[String("soil_moisture_max_level")];
-
-    if (water_valve_signal != last_water_valve_signal) {
-        last_water_valve_signal = water_valve_signal;
-        if (water_valve_signal) {
-            io_handler.openWaterValve();
-            DEBUG_PRINTLN("[I/O] Water valve has been OPENED");
-        } else {
-            io_handler.closeWaterValve();
-            DEBUG_PRINTLN("[I/O] Water valve has been CLOSED");
-        }
-    }
+	// TODO: to implement
+    f_water_valve_signal = false;
+    f_water_valve_signal_on  = false;
 }
 
 void setup(void) {
@@ -164,15 +173,93 @@ void loop() {
     char line_proto_char[line_proto_len];
     line_proto.toCharArray(line_proto_char, line_proto_len);
     client.publish(SENSOR_TOPIC, line_proto_char);
-
-    if (soilMoisture >= 100) {
-        io_handler.closeWaterValve();
-        last_water_valve_signal = false;
-    };
-
     displayLib.updateDisplay(rawSoilMoisture, soilMoisture,
                              soil_moisture_min_level, soil_moisture_max_level,
                              last_water_valve_signal);
+
+    switch(state)
+    {
+        case IDLE:
+            io_handler.closeWaterValve();
+
+            // transition 1
+            if (
+                 soilMoisture <= soil_moisture_min_level
+                 &&
+                 (millis() - idle_time) > WATER_VALVE_BOUNCER_DELAY
+             ) {
+                state = WATER;
+                water_time = millis();
+            }
+
+            // transition 3
+            if (
+                f_water_valve_signal == true
+                &&
+                f_water_valve_signal_on == false
+                ) {
+                state = FORCE_NOT_WATER ;
+            }
+
+            // transition 5
+            if (
+                f_water_valve_signal == true
+                &&
+                f_water_valve_signal_on == true
+                ) {
+                state = FORCE_WATER ;
+            }
+            break;
+        case WATER:
+            io_handler.openWaterValve();
+
+            // transition 2
+            if (
+                soilMoisture >= soil_moisture_max_level
+                ||
+                (millis() - water_time) > MAX_WATER_PERIOD
+            ) {
+                idle_time = millis();
+                state = IDLE;
+            }
+
+            // transition 9
+            if ( f_water_valve_signal == true ) { state = FORCE_NOT_WATER ;}
+
+            break;
+        case FORCE_NOT_WATER:
+            io_handler.closeWaterValve();
+
+            // transition 4
+            if (f_water_valve_signal == false) { state = IDLE ;}
+
+            // transition 8
+            if (f_water_valve_signal_on == true) { state = FORCE_WATER ;}
+            break;
+        case FORCE_WATER:
+            io_handler.openWaterValve();
+
+            // transition 6
+            if (
+                f_water_valve_signal == false
+                &&
+                f_water_valve_signal_on == false
+                ) {
+                state = IDLE ;
+            }
+
+            // transition 7
+            if (
+                f_water_valve_signal == true
+                &&
+                f_water_valve_signal_on == false
+                ) {
+                state = FORCE_NOT_WATER ;
+            }
+
+            break;
+    }
+
 
 	delay(500);
     // Clear Watch dog
