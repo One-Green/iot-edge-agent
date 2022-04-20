@@ -84,7 +84,13 @@ void DisplayLib::printTemplate() {
 	tft.setCursor(2, 80);
 	tft.print("Config Max (%): ");
 	tft.setCursor(2, 90);
-	tft.print("Valve status  : ");
+	tft.print("Valve ctl     : ");
+	tft.setCursor(2, 100);
+    tft.print("[F] Valve     : ");
+    tft.setCursor(2, 110);
+    tft.print("[F] Valve ON  : ");
+    tft.setCursor(2, 120);
+    tft.print("Water source tag : ");
 }
 
 
@@ -93,9 +99,13 @@ void DisplayLib::updateDisplay(
 		float moistureLevel,
 		float configMin,
 		float configMax,
-		bool water_valve_signal){
+		bool water_valve_signal,
+		bool fctl_water_valve_signal,
+        bool fctl_water_valve,
+        String water_tag ){
 
-	tft.fillRect(90, 50, 128, 50, ST7735_GREEN);
+	tft.fillRect(90, 50, 78, 70, ST7735_GREEN);
+    tft.fillRect(0, 130, 128, 30, ST7735_GREEN);
 
 	tft.setCursor(95, 50);
 	tft.print((int) moistureLevelADC);
@@ -111,12 +121,30 @@ void DisplayLib::updateDisplay(
 
 	tft.setCursor(95, 90);
 	if (water_valve_signal){
-		tft.print("OPEN");
+		tft.print("ON");
 	}
 	else{
-		tft.print("CLOSE");
+		tft.print("OFF");
 	}
 
+    tft.setCursor(95, 100);
+    if (fctl_water_valve_signal){
+        tft.print("ON");
+    }
+    else{
+        tft.print("OFF");
+    }
+
+    tft.setCursor(95, 110);
+    if (fctl_water_valve){
+        tft.print("ON");
+    }
+    else{
+        tft.print("OFF");
+    }
+
+	tft.setCursor(2, 130);
+    tft.print(water_tag);
 }
 
 void DisplayLib::drawtext(char *text, uint16_t color) {
