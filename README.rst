@@ -13,3 +13,24 @@ GUI Based deployment
 --------------------
 
 Use this project to deploy with an graphical interface : https://github.com/One-Green/iot-edge-wizard
+
+
+Manual flash
+------------
+
+Set .env file with these values
+
+.. code-block:: shell
+
+    WIFI_SSID=
+    WIFI_PASSWORD=
+    MQTT_SERVER=
+    MQTT_PORT=
+    MQTT_USER=
+    MQTT_PASSWORD=
+    # use SERIAL_PRINT_ON to activate serial print
+    # else use any variable to deactivate
+    SERIAL_PRINT_VAR=SERIAL_PRINT_ON
+    NODE_TAG=
+
+Use Makefile cmd to flash

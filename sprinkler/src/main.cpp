@@ -22,27 +22,42 @@
 #include "Config.h"
 #include "esp_task_wdt.h"
 
-// Watch configuration (in second)
-#define WDT_TIMEOUT 3
+// State machine implementation :
+enum State {
+    IDLE,
+    WATER,
+    FORCE_NOT_WATER,
+    FORCE_WATER
+};
+static State state = IDLE ;
+unsigned int WATER_VALVE_BOUNCER_DELAY=10 ;
+unsigned int MAX_WATER_PERIOD=3;
+unsigned int idle_time=0;
+unsigned int water_time=0;
+
+// Watch dog configuration (in second)
+#define WDT_TIMEOUT 3 // superloop max duration
 
 // ADC to MAX = 0% and ADC to MIN = 100% calibration
 // Used for mapping
 int SOIL_MOISTURE_ADC_MAX = 4095;
 int SOIL_MOISTURE_ADC_MIN = 1300;
 
-// Actuator
-bool last_water_valve_signal = false;
-int soil_moisture_min_level = 0;
-int soil_moisture_max_level = 0;
+// controller callback variables
+String water_link_tag ;               //  json key=wtl
+bool water_valve_signal      = false; //  json key=wvs
+bool fctl_water_valve_signal = false; //  json key=wvs
+bool fctl_water_valve        = false; //  json key=fwv
+int soil_moisture_min_level  = 0;     //  json key=min
+int soil_moisture_max_level  = 0;     //  json key=max
 
-
+// objects instantiation
 WiFiClient espClient;
 PubSubClient client(espClient);
 DisplayLib displayLib;
 OGIO io_handler;
 
 // Custom functions
-
 void reconnect_mqtt() {
 	// Loop until we're reconnected
 	while (!client.connected()) {
@@ -85,21 +100,13 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 	deserializeJson(doc, messageTemp);
 	JsonObject obj = doc.as<JsonObject>();
 
-	String tag = obj[String("tag")];
-	bool water_valve_signal = obj[String("water_valve_signal")];
-	soil_moisture_min_level = obj[String("soil_moisture_min_level")];
-	soil_moisture_max_level = obj[String("soil_moisture_max_level")];
+	water_link_tag = obj[String("wtl")].as<String>();
+	water_valve_signal = obj[String("wvs")];
+    fctl_water_valve_signal = obj[String("fwvs")];
+    fctl_water_valve = obj[String("fwv")];
+	soil_moisture_min_level = obj[String("hmin")];
+	soil_moisture_max_level = obj[String("hmax")];
 
-    if (water_valve_signal != last_water_valve_signal) {
-        last_water_valve_signal = water_valve_signal;
-        if (water_valve_signal) {
-            io_handler.openWaterValve();
-            DEBUG_PRINTLN("[I/O] Water valve has been OPENED");
-        } else {
-            io_handler.closeWaterValve();
-            DEBUG_PRINTLN("[I/O] Water valve has been CLOSED");
-        }
-    }
 }
 
 void setup(void) {
@@ -164,17 +171,103 @@ void loop() {
     char line_proto_char[line_proto_len];
     line_proto.toCharArray(line_proto_char, line_proto_len);
     client.publish(SENSOR_TOPIC, line_proto_char);
+    displayLib.updateDisplay(
+        rawSoilMoisture,
+        soilMoisture,
+        soil_moisture_min_level,
+        soil_moisture_max_level,
+        water_valve_signal,
+        fctl_water_valve_signal,
+        fctl_water_valve,
+        water_link_tag
+    );
 
-    if (soilMoisture >= 100) {
-        io_handler.closeWaterValve();
-        last_water_valve_signal = false;
-    };
+    switch(state)
+    {
+        case IDLE:
+            io_handler.closeWaterValve();
 
-    displayLib.updateDisplay(rawSoilMoisture, soilMoisture,
-                             soil_moisture_min_level, soil_moisture_max_level,
-                             last_water_valve_signal);
+            // transition 1
+            if (
+                 soilMoisture <= soil_moisture_min_level
+                 &&
+                 (millis() - idle_time) > WATER_VALVE_BOUNCER_DELAY * 1000
+                 &&
+                 fctl_water_valve_signal == false
+             ) {
+                state = WATER;
+                water_time = millis();
+            }
 
-	delay(500);
+            // transition 3
+            if (
+                fctl_water_valve_signal == true
+                &&
+                fctl_water_valve == false
+                ) {
+                state = FORCE_NOT_WATER ;
+            }
+
+            // transition 5
+            if (
+                fctl_water_valve_signal == true
+                &&
+                fctl_water_valve == true
+                ) {
+                state = FORCE_WATER ;
+            }
+            break;
+        case WATER:
+            io_handler.openWaterValve();
+
+            // transition 2
+            if (
+                soilMoisture >= soil_moisture_max_level
+                ||
+                (millis() - water_time) > MAX_WATER_PERIOD * 1000
+            ) {
+                idle_time = millis();
+                state = IDLE;
+            }
+
+            // transition 9
+            if ( fctl_water_valve_signal == true ) { state = FORCE_NOT_WATER ;}
+
+            break;
+        case FORCE_NOT_WATER:
+            io_handler.closeWaterValve();
+
+            // transition 4
+            if (fctl_water_valve_signal == false) { state = IDLE ;}
+
+            // transition 8
+            if (fctl_water_valve == true) { state = FORCE_WATER ;}
+            break;
+        case FORCE_WATER:
+            io_handler.openWaterValve();
+
+            // transition 6
+            if (
+                fctl_water_valve_signal == false
+                &&
+                fctl_water_valve == false
+                ) {
+                state = IDLE ;
+            }
+
+            // transition 7
+            if (
+                fctl_water_valve_signal == true
+                &&
+                fctl_water_valve == false
+                ) {
+                state = FORCE_NOT_WATER ;
+            }
+
+            break;
+    }
+
+	delay(1300);
     // Clear Watch dog
     esp_task_wdt_reset();
 }

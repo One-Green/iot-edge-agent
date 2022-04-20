@@ -25,15 +25,27 @@ public:
 
 	void connectedWifi();
 
-	void printHeader(char *wifiSsid, IPAddress ip, char *nodeType, char *nodeTag);
+	void printHeader(
+	    char *wifiSsid,
+        IPAddress ip,
+        char *nodeType,
+        char *nodeTag
+    );
 
 	String ip2Str(IPAddress ip);
 
 	void printTemplate();
 
-	void updateDisplay(float moistureLevelADC, float moistureLevel,
-					float configMin, float configMax ,
-					bool water_valve_signal);
+	void updateDisplay(
+        float  moistureLevelADC,
+        float  moistureLevel,
+        float  configMin,
+        float  configMax,
+        bool   water_valve_signal,
+        bool   fctl_water_valve_signal,
+        bool   fctl_water_valve,
+        String water_tag
+    );
 
 	void printRegistryError();
 
