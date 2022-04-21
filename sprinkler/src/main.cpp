@@ -30,26 +30,27 @@ enum State {
     FORCE_WATER
 };
 static State state = IDLE ;
-unsigned int WATER_VALVE_BOUNCER_DELAY=10 ;
-unsigned int MAX_WATER_PERIOD=3;
-unsigned int idle_time=0;
-unsigned int water_time=0;
+unsigned int WATER_VALVE_BOUNCER_DELAY=15 ;
+unsigned int MAX_WATER_PERIOD=3 ;
+unsigned int idle_time=0 ;
+unsigned int water_time=0 ;
 
 // Watch dog configuration (in second)
 #define WDT_TIMEOUT 3 // superloop max duration
 
 // ADC to MAX = 0% and ADC to MIN = 100% calibration
 // Used for mapping
-int SOIL_MOISTURE_ADC_MAX = 4095;
-int SOIL_MOISTURE_ADC_MIN = 1300;
+int SOIL_MOISTURE_ADC_MAX = 4095 ;
+int SOIL_MOISTURE_ADC_MIN = 1300 ;
 
 // controller callback variables
-
-String water_link_tag ;               //  json key=wtl
-bool fctl_water_valve_signal = false; //  json key=wvs
-bool fctl_water_valve        = false; //  json key=fwv
-int soil_moisture_min_level  = 0;     //  json key=min
-int soil_moisture_max_level  = 0;     //  json key=max
+unsigned int MQTT_INTERACTION_DELAY=5 ; //  publish/received every x seconds
+unsigned int mqtt_time_bouncer ;        //  keep last mqtt interaction
+String water_link_tag ;                 //  json key=wtl
+bool fctl_water_valve_signal = false ;  //  json key=wvs
+bool fctl_water_valve        = false ;  //  json key=fwv
+int soil_moisture_min_level  = 0 ;      //  json key=min
+int soil_moisture_max_level  = 0 ;      //  json key=max
 
 // objects instantiation
 WiFiClient espClient;
@@ -156,20 +157,30 @@ void loop() {
 		reconnect_mqtt();
 	}
 	client.loop();
+
+    // Read sensors
     int rawSoilMoisture = io_handler.getMoistureLevelADC();
     int soilMoisture = io_handler.getMoistureLevel(
             SOIL_MOISTURE_ADC_MIN,
             SOIL_MOISTURE_ADC_MAX,
             100, 0);
     DEBUG_PRINTLN("[I/O] Soil moisture ADC=" + String(rawSoilMoisture) + "/" + "LEVEL=" + String(soilMoisture));
-    DEBUG_PRINT("[MQTT] Sending >> on topic= " + String(SENSOR_TOPIC) + " Influxdb line protocol message: ");
-    String line_proto = io_handler.generateInfluxLineProtocol();
-    DEBUG_PRINTLN(line_proto);
-    // convert string to char and publish to mqtt
-    int line_proto_len = line_proto.length() + 1;
-    char line_proto_char[line_proto_len];
-    line_proto.toCharArray(line_proto_char, line_proto_len);
-    client.publish(SENSOR_TOPIC, line_proto_char);
+
+   // MQTT interaction
+    if ( millis() - mqtt_time_bouncer > MQTT_INTERACTION_DELAY * 1000)
+    {
+        DEBUG_PRINT("[MQTT] Sending >> on topic= " + String(SENSOR_TOPIC) + " Influxdb line protocol message: ");
+        String line_proto = io_handler.generateInfluxLineProtocol();
+        DEBUG_PRINTLN(line_proto);
+        // convert string to char and publish to mqtt
+        int line_proto_len = line_proto.length() + 1;
+        char line_proto_char[line_proto_len];
+        line_proto.toCharArray(line_proto_char, line_proto_len);
+        client.publish(SENSOR_TOPIC, line_proto_char);
+        mqtt_time_bouncer = millis();
+    }
+
+    // TFT screen update
     displayLib.updateDisplay(
         rawSoilMoisture,
         soilMoisture,
@@ -181,6 +192,7 @@ void loop() {
         water_link_tag
     );
 
+    // State handler
     switch(state)
     {
         case IDLE:
@@ -272,8 +284,8 @@ void loop() {
 
             break;
     }
-
-	delay(1300);
     // Clear Watch dog
     esp_task_wdt_reset();
+
+    delay(300);
 }
