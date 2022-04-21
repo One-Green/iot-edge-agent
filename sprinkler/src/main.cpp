@@ -44,8 +44,8 @@ int SOIL_MOISTURE_ADC_MAX = 4095;
 int SOIL_MOISTURE_ADC_MIN = 1300;
 
 // controller callback variables
+
 String water_link_tag ;               //  json key=wtl
-bool water_valve_signal      = false; //  json key=wvs
 bool fctl_water_valve_signal = false; //  json key=wvs
 bool fctl_water_valve        = false; //  json key=fwv
 int soil_moisture_min_level  = 0;     //  json key=min
@@ -101,7 +101,6 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 	JsonObject obj = doc.as<JsonObject>();
 
 	water_link_tag = obj[String("wtl")].as<String>();
-	water_valve_signal = obj[String("wvs")];
     fctl_water_valve_signal = obj[String("fwvs")];
     fctl_water_valve = obj[String("fwv")];
 	soil_moisture_min_level = obj[String("hmin")];
@@ -176,7 +175,7 @@ void loop() {
         soilMoisture,
         soil_moisture_min_level,
         soil_moisture_max_level,
-        water_valve_signal,
+        io_handler.getWaterValveStatus(),
         fctl_water_valve_signal,
         fctl_water_valve,
         water_link_tag
@@ -185,8 +184,6 @@ void loop() {
     switch(state)
     {
         case IDLE:
-            io_handler.closeWaterValve();
-
             // transition 1
             if (
                  soilMoisture <= soil_moisture_min_level
@@ -195,8 +192,9 @@ void loop() {
                  &&
                  fctl_water_valve_signal == false
              ) {
-                state = WATER;
+                io_handler.openWaterValve();
                 water_time = millis();
+                state = WATER;
             }
 
             // transition 3
@@ -205,6 +203,7 @@ void loop() {
                 &&
                 fctl_water_valve == false
                 ) {
+                io_handler.closeWaterValve();
                 state = FORCE_NOT_WATER ;
             }
 
@@ -214,44 +213,50 @@ void loop() {
                 &&
                 fctl_water_valve == true
                 ) {
+                io_handler.openWaterValve();
                 state = FORCE_WATER ;
             }
             break;
         case WATER:
-            io_handler.openWaterValve();
-
             // transition 2
             if (
                 soilMoisture >= soil_moisture_max_level
                 ||
                 (millis() - water_time) > MAX_WATER_PERIOD * 1000
             ) {
+                io_handler.closeWaterValve();
                 idle_time = millis();
                 state = IDLE;
             }
 
             // transition 9
-            if ( fctl_water_valve_signal == true ) { state = FORCE_NOT_WATER ;}
+            if ( fctl_water_valve_signal == true ) {
+                io_handler.closeWaterValve();
+                state = FORCE_NOT_WATER;
+            }
 
             break;
         case FORCE_NOT_WATER:
-            io_handler.closeWaterValve();
-
             // transition 4
-            if (fctl_water_valve_signal == false) { state = IDLE ;}
+            if (fctl_water_valve_signal == false) {
+                io_handler.closeWaterValve();
+                state = IDLE;
+            }
 
             // transition 8
-            if (fctl_water_valve == true) { state = FORCE_WATER ;}
+            if (fctl_water_valve == true) {
+                io_handler.openWaterValve();
+                state = FORCE_WATER ;
+            }
             break;
         case FORCE_WATER:
-            io_handler.openWaterValve();
-
             // transition 6
             if (
                 fctl_water_valve_signal == false
                 &&
                 fctl_water_valve == false
                 ) {
+                io_handler.closeWaterValve();
                 state = IDLE ;
             }
 
@@ -261,6 +266,7 @@ void loop() {
                 &&
                 fctl_water_valve == false
                 ) {
+                io_handler.closeWaterValve();
                 state = FORCE_NOT_WATER ;
             }
 

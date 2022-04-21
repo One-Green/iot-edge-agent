@@ -35,6 +35,10 @@ void OGIO::closeWaterValve() {
 	digitalWrite(WATER_VALVE_PIN, LOW);
 }
 
+bool OGIO::getWaterValveStatus(){
+    return digitalRead(WATER_VALVE_PIN);
+}
+
 String OGIO::generateInfluxLineProtocol() {
 	int int_soilMoistureADC = (int) soilMoistureADC ;
 	int int_soilMoisture = (int) soilMoisture ;

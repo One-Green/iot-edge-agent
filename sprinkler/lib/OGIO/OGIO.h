@@ -21,6 +21,8 @@ public:
 
 	void closeWaterValve();
 
+    bool getWaterValveStatus();
+
 	String generateInfluxLineProtocol();
 
 	char *nodeTag;
