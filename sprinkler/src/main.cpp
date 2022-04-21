@@ -1,18 +1,25 @@
 /*
  * Sprinkler ESP32 Arduino Firmware
- * https://github.com/One-Green/node-sprinkler-arduino
+ * Documentation : https://one-green.readthedocs.io/en/latest/iot_nodes/sprinkler.html
+ * Website: www.one-green.io
  *
- *
- * Work with this framework
+ * Work with this framework > Helm chart : https://artifacthub.io/packages/helm/one-green-core/one-green-core
  * One-Green : open source framework for plant cultivation including web server and microcontroller framework
  *
- * License : Creative Commons Legal Code - CC0 1.0 Universal
+ * LICENSE:
+ * Creative Commons Attribution-NonCommercial 4.0 International Public License
+ * By exercising the Licensed Rights (defined below),
+ * You accept and agree to be bound by the terms and conditions of this
+ * Creative Commons Attribution-NonCommercial 4.0 International Public License ("Public License").
+ * To the extent this Public License may be interpreted as a contract,
+ * You are granted the Licensed Rights in consideration of Your acceptance of these terms and conditions,
+ * and the Licensor grants You such rights in consideration of benefits the Licensor receives from making
+ * the Licensed Material available under these terms and conditions.
+ *
  * Author: Shanmugathas Vigneswaran
  * mail: shanmugathas.vigneswaran@outlook.fr
  *
- *
- * */
-
+ */
 
 #include "WiFi.h"
 #include "ArduinoJson.h"
