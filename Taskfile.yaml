@@ -1,0 +1,46 @@
+# https://taskfile.dev
+
+version: '3'
+
+dotenv:  [".env"]
+
+tasks:
+  default:
+    desc:  list all
+    cmds:
+      - task --list
+
+  fs:
+    desc: flash sprinkler firmware
+    cmds:
+      - cd sprinkler && pio run -t upload
+  fsm:
+    desc: flash sprinkler firmware and serial monitor
+    cmds:
+      - task: fs
+      - pio device monitor -b 115200
+
+  fws:
+    desc: flash water slave
+    cmds:
+      - cd water/i2c_slave_mega && pio run -t upload
+  fwsm:
+    desc: flash water slave and serial monitor
+    cmds:
+      - task: fws
+      - pio device monitor -b 115200
+
+  fwm:
+    desc:  flash water master
+    cmds:
+      - cd water/master_esp32 && pio run -t upload
+  fwmm:
+    desc: flash water master and serial monitor
+    cmds:
+      - task: fwm
+      - pio device monitor -b 115200
+
+  dot:
+    desc: render dot files
+    cmds:
+      - dot -Tpng sprinkler/state_machine.gv > sprinkler/state_machine.png

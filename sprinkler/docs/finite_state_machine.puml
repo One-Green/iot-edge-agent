@@ -1,0 +1,56 @@
+@startuml
+
+IDLE:
+WATER:
+FORCE_NO_WATER:
+FORCE_WATER:
+
+IDLE --> WATER
+note on link
+[T1] Start watering
+Vars
+water_time = millis()
+end note
+
+WATER --> IDLE
+note on link
+[T2] Stop watering
+Vars
+idle_time = millis()
+end note
+
+
+IDLE --> FORCE_NO_WATER
+note on link
+[T3] Force stop water
+end note
+
+FORCE_NO_WATER --> IDLE
+note on link
+[T4] Un-force stop water
+end note
+
+IDLE --> FORCE_WATER
+note on link
+[T5] Force water
+end note
+FORCE_WATER --> IDLE
+note on link
+[T6] Un-force water
+end note
+
+FORCE_NO_WATER --> FORCE_WATER
+note on link
+[T7] Force water
+end note
+
+FORCE_WATER --> FORCE_NO_WATER
+note on link
+[T8] Un-force water
+end note
+
+WATER --> FORCE_NO_WATER
+note on link
+[T8] Force stop water
+end note
+@enduml
