@@ -1,9 +1,9 @@
 @startuml
 
-IDLE:
-WATER:
-FORCE_NO_WATER:
-FORCE_WATER:
+state "Idle" as IDLE
+state "Water" as  WATER
+state "Force no water" as FORCE_NO_WATER
+state "Force water" as FORCE_WATER
 
 IDLE --> WATER
 note on link

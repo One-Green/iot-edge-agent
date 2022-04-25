@@ -1,5 +1,5 @@
 Water firmware
-=============
+==============
 
 Features of this IoT node:
 
@@ -25,3 +25,9 @@ ESP32 and Mega work through i2c protocol.
 **Arduino Mega** handle hardware inputs/outputs and report to **ESP32**.
 
 Folder **master_esp32** and **i2c_slave_mega** platformio including README.rst
+
+Finite state machine
+====================
+
+
+![finite state machine](docs/finite_state_machine.png "Finite state machine")
