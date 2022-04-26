@@ -2,115 +2,219 @@
 @startuml
 
 state "Idle" as IDLE
-state "Water pump ON" as WATER_PUMP_ON
+state "Supply water to sprinkler(s)" as WATER_PUMP_ON
 state "Up nutrient level" as UP_NUTRIENT_LEVEL
 state "Mix nutrient liquid" as MIX_NUTRIENT_LIQUID
 state "Down pH level" as DOWN_PH_LEVEL
 state "Mix pH downer liquid" as MIX_PH_DOWNER_LIQUID
+state "Force signal" as FORCE_SIGNAL
+state "Force on" as FORCE_SIGNAL_ON
 
+' ================= nutrient level regulation  =================
+' ==============================================================
 IDLE --> UP_NUTRIENT_LEVEL
-note on link
-[T1]
-tds <= min_tds_level
+    note on link
+        [T1]
+        tds <= min_tds_level
 
-nutrient_time = millis()
-mix_time = millis()
+        nutrient_time = millis()
+        mix_time = millis()
 
-ON Nutrient pump
-ON Mixer pump
-end note
+        ON Nutrient pump
+        ON Mixer pump
+    end note
+
+UP_NUTRIENT_LEVEL --> IDLE
+    note on link
+        [T2]
+        if ctl_force* == true
+        OFF Nutrient pump
+        OFF Mixer pump
+    end note
 
 UP_NUTRIENT_LEVEL --> MIX_NUTRIENT_LIQUID
-note on link
-[T2]
-(millis() - nutrient_time) > MAX_NUTRIENT_PERIOD * 1000
+    note on link
+        [T3]
+        (millis() - nutrient_time) > MAX_NUTRIENT_PERIOD * 1000
 
-OFF Nutrient pump
-end note
+        OFF Nutrient pump
+    end note
+
 
 MIX_NUTRIENT_LIQUID --> UP_NUTRIENT_LEVEL
-note on link
-[T3]
-(
-    (millis() - mix_time) > MIX_LOCK * 1000
-    &
-    ( tds <= min_tds_level )
-)
+    note on link
+        [T4]
+        (
+            (millis() - mix_time) > MIX_LOCK * 1000
+            &
+            ( tds <= min_tds_level )
+        )
 
-nutrient_time = millis()
-mix_time = millis()
+        nutrient_time = millis()
+        mix_time = millis()
 
-ON Nutrient pump
-end note
+        ON Nutrient pump
+    end note
 
 MIX_NUTRIENT_LIQUID --> IDLE
-note on link
-[T4]
-tds >= max_tds_level
+    note on link
+        [T5]
+        (
+            tds >= max_tds_level
+            or
+            if ctl_force* == true
+        )
 
-OFF Nutrient pump
-OFF Mixer pump
-end note
+        OFF Nutrient pump
+        OFF Mixer pump
+    end note
 
+
+' ==================== pH level regulation  ====================
+' ==============================================================
 IDLE --> DOWN_PH_LEVEL
-note on link
-[T5]
-ph >= max_ph_level
+    note on link
+        [T6]
+        ph >= max_ph_level
 
-ph_downer_time = millis()
-mix_time = millis()
+        ph_downer_time = millis()
+        mix_time = millis()
 
-ON pH downer pump
-ON Mixer pump
-end note
+        ON pH downer pump
+        ON Mixer pump
+    end note
+
+DOWN_PH_LEVEL --> IDLE
+    note on link
+        [T7]
+        if ctl_force* == true
+        OFF pH downer pump
+        OFF Mixer pump
+    end note
 
 DOWN_PH_LEVEL --> MIX_PH_DOWNER_LIQUID
-note on link
-[T6]
-(millis() - ph_downer_time) > MAX_PH_DOWNER_PERIOD * 1000
+    note on link
+        [T8]
+        (millis() - ph_downer_time) > MAX_PH_DOWNER_PERIOD * 1000
 
-OFF pH downer pump
-end note
+        OFF pH downer pump
+    end note
 
 MIX_PH_DOWNER_LIQUID --> DOWN_PH_LEVEL
-note on link
-[T7]
-(
-    (millis() - mix_time) > MIX_LOCK * 1000
-    &
-    ph >= max_ph_level
-)
+    note on link
+        [T9]
+        (
+            (millis() - mix_time) > MIX_LOCK * 1000
+            &
+            ph >= max_ph_level
+        )
 
-ph_downer_time = millis()
-mix_time = millis()
+        ph_downer_time = millis()
+        mix_time = millis()
 
-ON pH downer pump
-end note
+        ON pH downer pump
+    end note
 
 
 MIX_PH_DOWNER_LIQUID --> IDLE
-note on link
-[T8]
-ph <= min_ph_level
+    note on link
+        [T10]
+        (
+            ph <= min_ph_level
+            or
+            if ctl_force* == true
+        )
 
-OFF pH downer pump
-OFF Mixer pump
-end note
+        OFF pH downer pump
+        OFF Mixer pump
+    end note
 
 IDLE --> WATER_PUMP_ON
-note on link
-[T9]
-water_required == true
+    note on link
+        [T11]
+        water_required == true
 
-ON water pump
-end note
+        ON water pump
+    end note
 
 WATER_PUMP_ON --> IDLE
-note on link
-[T9]
-water_required == false
+    note on link
+        [T12]
+        (
+            water_required == false
+            or
+            if ctl_force* == true
+        )
 
-OFF water pump
-end note
+        OFF water pump
+    end note
+
+' ========================= force state ========================
+' ==============================================================
+IDLE --> FORCE_SIGNAL
+    note on link
+        [T13]
+        if ctl_force_signal* == true
+
+        OFF related Pump(s)
+    end note
+
+FORCE_SIGNAL --> FORCE_SIGNAL_ON
+    note on link
+        [T14]
+
+        (
+            if ctl_force_signal* == true
+            and
+            if ctl_force_on* == true
+        )
+
+        ON related Pump(s)
+    end note
+
+FORCE_SIGNAL_ON --> FORCE_SIGNAL
+    note on link
+        [T15]
+        (
+            if ctl_force_signal* == true
+            and
+            if ctl_force_on* == false
+        )
+        OFF related pump(s)
+    end note
+
+FORCE_SIGNAL_ON --> IDLE
+    note on link
+        [T16]
+        (
+            if ctl_force_signal* == false
+            and
+            if ctl_force_on* == false
+        )
+        OFF all pumps
+    end note
+
+FORCE_SIGNAL --> IDLE
+    note on link
+        [T17]
+        (
+            if ctl_force_signal* == false
+            and
+            if ctl_force_on* == false
+        )
+        OFF all pumps
+    end note
+
+IDLE --> FORCE_SIGNAL_ON
+    note on link
+        [T18]
+        (
+            if ctl_force_signal* == true
+            and
+            if ctl_force_on* == true
+        )
+        ON related pump(s)
+    end note
+
 
 @enduml
