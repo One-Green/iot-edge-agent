@@ -4,20 +4,8 @@
  *  ESP32 board firmware
  *  Purpose:
  *      - Interact with mega-2560 board for Inputs/Outputs
- *      - Interact with master trough MQTT
+ *      - Interact with One-Green Core trough MQTT
  *      - Interact with ST7735 screen
- *
- * ----------- ESP32 UART ----------------
- * UART	    RX IO	TX IO	CTS	    RTS
- * UART0	GPIO3	GPIO1	N/A	    N/A
- * UART1	GPIO9	GPIO10	GPIO6	GPIO11
- * UART2	GPIO16	GPIO17	GPIO8	GPIO7
- * source : https://circuits4you.com/2018/12/31/esp32-hardware-serial2-example/
- * ----------------------------------------
- * Wiring :
- *  ESP32           Mega
- *  GPIO16 (RX) ->  D11 (TX)
- *  GPIO17 (TX) ->  D10 (RX)
  *
  * Author: Shanmugathas Vigneswaran
  * email: shanmugathas.vigneswaran@outlook.fr
@@ -32,25 +20,52 @@
 #include "OGDisplay.h"
 #include "esp_task_wdt.h"
 
+// State machine implementation
+enum State {
+    IDLE,
+    WATER_PUMP_ON,
+    UP_NUTRIENT_LEVEL,
+    MIX_NUTRIENT_LIQUID,
+    DOWN_PH_LEVEL,
+    MIX_PH_DOWNER_LIQUID,
+    FORCE_SIGNAL,
+    FORCE_SIGNAL_ON
+};
+static State state = IDLE ;
+// state timer
+unsigned int nutrient_time ;     // nutrient injection timer
+unsigned int ph_downer_time ;    // ph downer injection timer
+unsigned int mix_time ;          // mixer time
+unsigned int MAX_NUTRIENT_INJECTION  = 3 ;// value in seconds
+unsigned int MAX_PH_DOWNER_INJECTION = 3 ;// value in seconds
+unsigned int MIX_LOCK = 15 ;               // value in seconds
 // Watch configuration (in second)
 #define WDT_TIMEOUT 5
 
 unsigned long pubSensorTimer;
 unsigned long subControllerTimer;
 const int sensorPubRateSec = 1; //send sensor values each x seconds
-const int safetyCloseActuatorSec = 3; //close actuators if no response from Master
+const int safetyCloseActuatorSec = 3; //close actuators if no response from One-Green Core
 bool mqttCallbackInError = false; // if callback received = false, if safetyCloseActuatorSec = true
 
-// Parameter from Master, provided by MQTT JSON
-bool ctl_water_pump = false;
-bool ctl_nutrient_pump = false;
-bool ctl_ph_downer_pump = false;
-bool ctl_mixer_pump = false;
-float ctl_ph_level_min = 0;
-float ctl_ph_level_max = 0;
-float ctl_tds_level_min = 0;
-float ctl_tds_level_max = 0;
-int linked_sprinkler = 0 ;
+// Parameter from Core
+bool  ctl_water_pump              = false;
+bool  ctl_nutrient_pump           = false;
+bool  ctl_ph_downer_pump          = false;
+bool  ctl_mixer_pump              = false;
+float ctl_ph_level_min            = 0;
+float ctl_ph_level_max            = 0;
+float ctl_tds_level_min           = 0;
+float ctl_tds_level_max           = 0;
+int   linked_sprinkler            = 0 ;
+bool  force_water_pump_signal     = false ;
+bool  force_nutrient_pump_signal  = false ;
+bool  force_ph_downer_pump_signal = false ;
+bool  force_mixer_pump_signal     = false ;
+bool  water_pump_signal           = false ;
+bool  nutrient_pump_signal        = false ;
+bool  ph_downer_pump_signal       = false ;
+bool  mixer_pump_signal           = false ;
 
 // ----------------------------------   // Sensors Regs Values
 int water_level_cm = 0;
@@ -59,20 +74,12 @@ int ph_downer_level_cm = 0;
 int ph_level = 0;
 int tds_level = 0;
 
-// ----------------------------------   // Actuators
-bool last_water_pump_state = false;
-bool last_nutrient_pump_state = false;
-bool last_ph_downer_pump_state = false;
-bool last_mixer_pump_state = false;
-
 // ---------------------------------- // Class(es) instantiation(s)
 WiFiClient espClient;
 PubSubClient client(espClient);
 DisplayLib displayLib;
 
-
 // methods
-
 void connectToWiFiNetwork()
 {
     DEBUG_PRINT("[WIFI] Connecting to ");
@@ -148,148 +155,45 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     ctl_ph_downer_pump = obj[String("p3")];
     // Parsing PH Downer Pumps param
     ctl_mixer_pump = obj[String("p4")];
-
+    // pH min/max config
     ctl_ph_level_min = obj[String("pmin")];
     ctl_ph_level_max = obj[String("pmax")];
+    // tds nutrient min/max config
     ctl_tds_level_min = obj[String("tmin")];
     ctl_tds_level_max = obj[String("tmax")];
-
+    // connected sprinkler count
     linked_sprinkler = obj[String("spc")];
+    // force control
+    force_water_pump_signal =  obj[String("fps1")];
+    force_nutrient_pump_signal = obj[String("fps2")];
+    force_ph_downer_pump_signal = obj[String("fps3")];
+    force_mixer_pump_signal = obj[String("fps4")];
+    water_pump_signal =  obj[String("fp1")];
+    nutrient_pump_signal = obj[String("fp2")];
+    ph_downer_pump_signal = obj[String("fp3")];
+    mixer_pump_signal = obj[String("fp4")];
 
-    unsigned long timeoutCount = millis();
-    bool setPumpState = false;
-    bool showMessage = true;
+}
 
-    // Handle water pump
-    if (ctl_water_pump != last_water_pump_state) {
-        last_water_pump_state = ctl_water_pump;
-        if (ctl_water_pump) //turn-ON and confirm 
-        { 
-            while ( (millis() - timeoutCount < 3000 ) && !setPumpState)
-            {
-                setPumpState = io_handler.OnWaterPump();
-                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for water pump activation");
-                showMessage = false;
-                delay(500);
-            }
-            DEBUG_PRINTLN("[I/O] Water pump is OPENED");
-        } 
-        else //turn-OFF and confirm 
-        {
-            timeoutCount = millis();
-            setPumpState = false;
-            showMessage = true;
-            while ((millis() - timeoutCount < 3000 ) && !setPumpState) 
-            { 
-                setPumpState = io_handler.OffWaterPump();
-                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for water pump closing");
-                showMessage = false;
-                delay(500);
-            }
-            DEBUG_PRINTLN("[I/O] Water pump is CLOSED");
-        }
-    }
-    
-    // handle nutrient pump
-    if (ctl_nutrient_pump != last_nutrient_pump_state) {
-        last_nutrient_pump_state = ctl_nutrient_pump;
-        if (ctl_nutrient_pump) {
-            timeoutCount = millis();
-            setPumpState = false;
-            showMessage = true;
-            while ((millis() - timeoutCount < 3000 ) && !setPumpState)
-            {
-                setPumpState = io_handler.OnNutrientPump();
-                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for nutrient pump activation");
-                showMessage = false;
-                delay(500);
-            }
-            DEBUG_PRINTLN("[I/O] Nutrient pump is OPENED");
-        } else {
-            timeoutCount = millis();
-            setPumpState = false;
-            showMessage = true;
-            while ((millis() - timeoutCount < 3000 ) && !setPumpState)
-            {
-                setPumpState = io_handler.OffNutrientPump();
-                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for nutrient pump closing");
-                showMessage = false;
-                delay(500);
-            }
-            DEBUG_PRINTLN("[I/O] Nutrient pump is CLOSED");
-        }
-    }
+bool check_force()
+{
+    bool _[16] = {
+        force_water_pump_signal,
+        force_nutrient_pump_signal,
+        force_ph_downer_pump_signal,
+        force_mixer_pump_signal,
+        water_pump_signal,
+        nutrient_pump_signal,
+        ph_downer_pump_signal,
+        mixer_pump_signal,
+    };
 
-    // handle pH downer pump
-    if (ctl_ph_downer_pump != last_ph_downer_pump_state) 
+    for (byte i = 0; i < sizeof(_) - 1; i++)
     {
-        last_ph_downer_pump_state = ctl_ph_downer_pump;
-
-        if (ctl_ph_downer_pump) 
-        {
-            timeoutCount = millis();
-            setPumpState = false;
-            showMessage = true;
-            while ((millis() - timeoutCount < 3000 ) && !setPumpState)
-            {
-                setPumpState = io_handler.OnPhDownerPump();
-                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for pH downer pump activation");
-                showMessage = false;
-                delay(500);
-            }
-            DEBUG_PRINTLN("[I/O] pH downer pump is OPENED");
-        } 
-        else
-        {
-            timeoutCount = millis();
-            setPumpState = false;
-            showMessage = true;
-            while ((millis() - timeoutCount < 3000 ) && !setPumpState)
-            {
-                setPumpState = io_handler.OffPhDownerPump();
-                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for pH downer pump closing");
-                showMessage = false;
-                delay(500);
-            }
-            DEBUG_PRINTLN("[I/O] pH downer pump is CLOSED");
-        }
+        if (_[i]) return true ;
     }
 
-    // handle mixer pump
-    if (ctl_mixer_pump != last_mixer_pump_state)
-    {
-        last_mixer_pump_state = ctl_mixer_pump;
-
-        if (ctl_mixer_pump)
-        {
-            timeoutCount = millis();
-            setPumpState = false;
-            showMessage = true;
-            while ((millis() - timeoutCount < 3000 ) && !setPumpState) 
-            {
-                setPumpState = io_handler.OnMixerPump();
-                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for mixer pump activation");
-                showMessage = false;
-                delay(500);
-            }
-            DEBUG_PRINTLN("[I/O] mixer pump is OPENED");
-        }
-        else
-        {
-            timeoutCount = millis();
-            setPumpState = false;
-            showMessage = true;
-            while ((millis() - timeoutCount < 3000 ) && !setPumpState)
-            {
-                setPumpState = io_handler.OffMixerPump();
-                if (showMessage) DEBUG_PRINTLN("[I/O] Waiting for mixer pump closing");
-                showMessage = false;
-                delay(500);
-            }
-            DEBUG_PRINTLN("[I/O] mixer pump is CLOSED");
-        }
-    }
-
+    return false;
 }
 
 void pubSensorsVals()
@@ -304,77 +208,6 @@ void pubSensorsVals()
     client.publish(SENSOR_TOPIC, line_proto_char);
 }
 
-void testI2Cslave()
-{
-    // idle
-    io_handler.sendIdle();
-    delay(200);
-
-    float v;
-    // ph voltage
-    io_handler.getPhVoltage();
-    // tds voltage
-    io_handler.getTDSVoltage();
-    // ph real valu1e
-    io_handler.getPhLevel();
-    // tds real value
-    io_handler.getTDS();
-
-    // water tank level
-    io_handler.getWaterLevelCM();
-    // nutrient tank level
-    io_handler.getNutrientLevelCM();
-    // ph downer tank level
-    io_handler.getPhDownerLevelCM();
-
-    // on+off water pump
-    io_handler.getWaterPumpStatus();
-    io_handler.OnWaterPump();
-    delay(1000);
-    io_handler.OffWaterPump();
-    delay(500);
-    io_handler.OnWaterPump();
-    delay(1000);
-    io_handler.OffWaterPump();
-
-    io_handler.getPhDownerPumpStatus();
-    io_handler.OnPhDownerPump();
-    delay(1000);
-    io_handler.OffPhDownerPump();
-    delay(500);
-    io_handler.OnPhDownerPump();
-    delay(1000);
-    io_handler.OffPhDownerPump();
-
-    io_handler.getNutrientPumpStatus();
-    io_handler.OnNutrientPump();
-    delay(1000);
-    io_handler.OffNutrientPump();
-    delay(500);
-    io_handler.OnNutrientPump();
-    delay(1000);
-    io_handler.OffNutrientPump();
-
-    io_handler.getMixerPumpStatus();
-    io_handler.OnMixerPump();
-    delay(1000);
-    io_handler.OffMixerPump();
-    delay(500);
-    io_handler.OnMixerPump();
-    delay(1000);
-    io_handler.OffMixerPump();
-    
-    String tmp;
-    DEBUG_PRINTLN("Generating line protocol string = ");
-    tmp = io_handler.generateInfluxLineProtocol();
-    DEBUG_PRINTLN(tmp);
-
-}
-
-void testDisplay()
-{
-    displayLib.initR();
-}
 
 void setup() {
 
@@ -391,8 +224,8 @@ void setup() {
     displayLib.initWifi();
 
     // Connect to WiFi 
-     connectToWiFiNetwork();
-     displayLib.connectedWifi();
+    connectToWiFiNetwork();
+    displayLib.connectedWifi();
 
     // Display WiFi Info
     displayLib.printHeader(WIFI_SSID, WiFi.localIP(), NODE_TYPE, NODE_TAG);
@@ -410,9 +243,6 @@ void setup() {
     //add current thread to WDT watch
     esp_task_wdt_add(NULL);
 
-    // for purpose only tests
-    // testI2Cslave();
-    // testDisplay();
 }
 
 
@@ -426,13 +256,13 @@ void loop() {
     client.loop();
     
     // Safe mode if no mqtt callback 
-    if (client.connected() && (millis() - subControllerTimer > (safetyCloseActuatorSec * 1000)) && mqttCallbackInError == false )
-    {
-        mqttCallbackInError = true;
-        DEBUG_PRINTLN("[MQTT] Warning callback time reached: switch OFF all actuators");
-        io_handler.safeMode();
-        DEBUG_PRINTLN("[MQTT] all actuators OFF");
-    }
+//    if (client.connected() && (millis() - subControllerTimer > (safetyCloseActuatorSec * 1000)) && mqttCallbackInError == false )
+//    {
+//        mqttCallbackInError = true;
+//        DEBUG_PRINTLN("[MQTT] Warning callback time reached: switch OFF all actuators");
+//        io_handler.safeMode();
+//        DEBUG_PRINTLN("[MQTT] all actuators OFF");
+//    }
     
     // Pub sensors every publish_evey (m) and only if the client is connected
     if (client.connected() && (millis() - pubSensorTimer > (sensorPubRateSec * 1000)))
@@ -443,8 +273,6 @@ void loop() {
         pubSensorTimer = millis();
         Serial.println(CONTROLLER_TOPIC);
     }
-//    else
-//        DEBUG_PRINT("...");
 
     displayLib.updateDisplay(
         io_handler.WaterTankLevel,
@@ -465,8 +293,79 @@ void loop() {
         ctl_ph_level_max
         );
 
-    // Clear Watch dog
-    esp_task_wdt_reset();
+    // State handler
+    switch(state)
+    {
+        case IDLE:
+            // T1
+            if (tds_level <= ctl_tds_level_min)
+            {
+                nutrient_time = millis();
+                mix_time = millis();
+                io_handler.OnNutrientPump();
+                io_handler.OnMixerPump();
+                state = UP_NUTRIENT_LEVEL;
+            }
+        break;
 
+        case WATER_PUMP_ON:
+        break;
+
+        case UP_NUTRIENT_LEVEL:
+            // T2
+            if (check_force() == true)
+            {
+                io_handler.OffNutrientPump();
+                io_handler.OffMixerPump();
+                state = IDLE;
+            }
+            // T3
+            if ( (millis() - nutrient_time) > MAX_NUTRIENT_INJECTION * 1000 )
+            {
+                io_handler.OffNutrientPump();
+                state = MIX_NUTRIENT_LIQUID;
+            }
+        break;
+
+        case MIX_NUTRIENT_LIQUID:
+
+            // T4
+            if ( (millis() - mix_time) > MIX_LOCK * 1000 )
+            {
+                nutrient_time = millis();
+                mix_time = millis();
+                io_handler.OnNutrientPump();
+                state = UP_NUTRIENT_LEVEL;
+            }
+            // T5
+            if (
+                tds_level >= ctl_tds_level_max
+                ||
+                check_force() == true
+            )
+            {
+                io_handler.OffNutrientPump();
+                io_handler.OffMixerPump();
+                state = IDLE;
+            }
+
+        break;
+
+        case DOWN_PH_LEVEL:
+        break;
+
+        case MIX_PH_DOWNER_LIQUID:
+        break;
+
+        case FORCE_SIGNAL:
+        break;
+
+        case FORCE_SIGNAL_ON:
+        break;
+    }
+
+    // Clear Watch dog
+    // TODO: to reactivate
+    //esp_task_wdt_reset();
     delay(200);
 }
