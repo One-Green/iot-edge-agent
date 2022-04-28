@@ -8,7 +8,7 @@ state "Mix nutrient liquid" as MIX_NUTRIENT_LIQUID
 state "Down pH level" as DOWN_PH_LEVEL
 state "Mix pH downer liquid" as MIX_PH_DOWNER_LIQUID
 state "Force signal" as FORCE_SIGNAL
-state "Force on" as FORCE_SIGNAL_ON
+
 
 ' ================= nutrient level regulation  =================
 ' ==============================================================
@@ -156,47 +156,12 @@ IDLE --> FORCE_SIGNAL
         [T13]
         if ctl_force_signal* == true
 
-        OFF related Pump(s)
-    end note
-
-FORCE_SIGNAL --> FORCE_SIGNAL_ON
-    note on link
-        [T14]
-
-        (
-            if ctl_force_signal* == true
-            and
-            if ctl_force_on* == true
-        )
-
-        ON related Pump(s)
-    end note
-
-FORCE_SIGNAL_ON --> FORCE_SIGNAL
-    note on link
-        [T15]
-        (
-            if ctl_force_signal* == true
-            and
-            if ctl_force_on* == false
-        )
-        OFF related pump(s)
-    end note
-
-FORCE_SIGNAL_ON --> IDLE
-    note on link
-        [T16]
-        (
-            if ctl_force_signal* == false
-            and
-            if ctl_force_on* == false
-        )
-        OFF all pumps
+        Handle signal
     end note
 
 FORCE_SIGNAL --> IDLE
     note on link
-        [T17]
+        [T14]
         (
             if ctl_force_signal* == false
             and
@@ -205,16 +170,6 @@ FORCE_SIGNAL --> IDLE
         OFF all pumps
     end note
 
-IDLE --> FORCE_SIGNAL_ON
-    note on link
-        [T18]
-        (
-            if ctl_force_signal* == true
-            and
-            if ctl_force_on* == true
-        )
-        ON related pump(s)
-    end note
 
 
 @enduml

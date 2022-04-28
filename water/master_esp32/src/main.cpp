@@ -50,9 +50,6 @@ bool mqttCallbackInError = false; // if callback received = false, if safetyClos
 
 // Parameter from Core
 bool  ctl_water_pump              = false;
-bool  ctl_nutrient_pump           = false;
-bool  ctl_ph_downer_pump          = false;
-bool  ctl_mixer_pump              = false;
 float ctl_ph_level_min            = 0;
 float ctl_ph_level_max            = 0;
 float ctl_tds_level_min           = 0;
@@ -149,12 +146,6 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     /* Parse params from MQTT Payload*/
     //Parsing Water Pumps param
     ctl_water_pump = obj[String("p1")];
-    //Parsing Nutrient Pumps param
-    ctl_nutrient_pump = obj[String("p2")];
-    //Parsing PH Downer Pumps param
-    ctl_ph_downer_pump = obj[String("p3")];
-    // Parsing PH Downer Pumps param
-    ctl_mixer_pump = obj[String("p4")];
     // pH min/max config
     ctl_ph_level_min = obj[String("pmin")];
     ctl_ph_level_max = obj[String("pmax")];
@@ -175,13 +166,26 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 
 }
 
-bool check_force()
+bool check_force_signal()
 {
-    bool _[16] = {
+    bool _[4] = {
         force_water_pump_signal,
         force_nutrient_pump_signal,
         force_ph_downer_pump_signal,
         force_mixer_pump_signal,
+    };
+
+    for (byte i = 0; i < sizeof(_) - 1; i++)
+    {
+        if (_[i]) return true ;
+    }
+
+    return false;
+}
+
+bool check_force_on()
+{
+    bool _[4] = {
         water_pump_signal,
         nutrient_pump_signal,
         ph_downer_pump_signal,
@@ -306,14 +310,41 @@ void loop() {
                 io_handler.OnMixerPump();
                 state = UP_NUTRIENT_LEVEL;
             }
+            // T6
+            if (ph_level >= ctl_ph_level_max )
+            {
+                ph_downer_time = millis();
+                mix_time = millis();
+                io_handler.OnPhDownerPump();
+                io_handler.OnMixerPump();
+                state = DOWN_PH_LEVEL ;
+            }
+            // T11
+            if (ctl_water_pump)
+            {
+                io_handler.OnWaterPump();
+                state = WATER_PUMP_ON;
+            }
+
+            // T13
+            if (check_force_signal)
+            {
+                state = FORCE_SIGNAL;
+            }
         break;
 
         case WATER_PUMP_ON:
+            // T12
+            if (ctl_water_pump)
+            {
+                io_handler.OffWaterPump();
+                state = IDLE;
+            }
         break;
 
         case UP_NUTRIENT_LEVEL:
             // T2
-            if (check_force() == true)
+            if (check_force_signal())
             {
                 io_handler.OffNutrientPump();
                 io_handler.OffMixerPump();
@@ -325,10 +356,10 @@ void loop() {
                 io_handler.OffNutrientPump();
                 state = MIX_NUTRIENT_LIQUID;
             }
+
         break;
 
         case MIX_NUTRIENT_LIQUID:
-
             // T4
             if ( (millis() - mix_time) > MIX_LOCK * 1000 )
             {
@@ -341,7 +372,7 @@ void loop() {
             if (
                 tds_level >= ctl_tds_level_max
                 ||
-                check_force() == true
+                check_force_signal()
             )
             {
                 io_handler.OffNutrientPump();
@@ -352,16 +383,63 @@ void loop() {
         break;
 
         case DOWN_PH_LEVEL:
+            // T7
+            if (check_force_signal())
+            {
+                io_handler.OffPhDownerPump();
+                io_handler.OffMixerPump();
+                state = IDLE;
+            }
+            // T8
+            if ( (millis() - ph_downer_time) > MAX_PH_DOWNER_INJECTION * 1000 )
+            {
+                io_handler.OffPhDownerPump();
+                state = MIX_PH_DOWNER_LIQUID;
+            }
         break;
 
         case MIX_PH_DOWNER_LIQUID:
+            // T9
+            if ( (millis() - mix_time ) > MIX_LOCK * 1000 )
+            {
+                ph_downer_time = millis();
+                mix_time = millis();
+                io_handler.OnPhDownerPump();
+                state = DOWN_PH_LEVEL;
+            }
+            // T10
+            if ( ph_level <= ctl_ph_level_min & check_force_signal())
+            {
+                io_handler.OffPhDownerPump();
+                io_handler.OffMixerPump();
+                state = IDLE;
+            }
         break;
 
         case FORCE_SIGNAL:
+            // T14
+            if (!check_force_signal())
+            {
+                io_handler.OffWaterPump();
+                io_handler.OffNutrientPump();
+                io_handler.OffPhDownerPump();
+                io_handler.OffMixerPump();
+                state = IDLE;
+            }
+            // handle water pump
+            if (force_water_pump_signal & water_pump_signal) { io_handler.OnWaterPump(); }
+            if (force_water_pump_signal & !water_pump_signal) { io_handler.OffWaterPump(); }
+            // handle nutrient pump
+            if (force_nutrient_pump_signal & nutrient_pump_signal) { io_handler.OnNutrientPump(); }
+            if (force_nutrient_pump_signal & !nutrient_pump_signal) { io_handler.OffNutrientPump(); }
+            // handle pH downer pump
+            if (force_ph_downer_pump_signal & ph_downer_pump_signal) { io_handler.OnPhDownerPump(); }
+            if (force_ph_downer_pump_signal & !ph_downer_pump_signal) { io_handler.OffPhDownerPump(); }
+            // handle mixer pump
+            if (force_mixer_pump_signal & mixer_pump_signal) { io_handler.OnMixerPump(); }
+            if (force_mixer_pump_signal & !mixer_pump_signal) { io_handler.OffMixerPump(); }
         break;
 
-        case FORCE_SIGNAL_ON:
-        break;
     }
 
     // Clear Watch dog
