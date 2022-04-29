@@ -159,45 +159,42 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
     force_nutrient_pump_signal = obj[String("fps2")];
     force_ph_downer_pump_signal = obj[String("fps3")];
     force_mixer_pump_signal = obj[String("fps4")];
-    water_pump_signal =  obj[String("fp1")];
+    water_pump_signal = obj[String("fp1")];
     nutrient_pump_signal = obj[String("fp2")];
     ph_downer_pump_signal = obj[String("fp3")];
     mixer_pump_signal = obj[String("fp4")];
-
 }
 
 bool check_force_signal()
 {
-    bool _[4] = {
-        force_water_pump_signal,
-        force_nutrient_pump_signal,
-        force_ph_downer_pump_signal,
-        force_mixer_pump_signal,
-    };
-
-    for (byte i = 0; i < sizeof(_) - 1; i++)
+    if (
+        force_water_pump_signal
+        ||
+        force_nutrient_pump_signal
+        ||
+        force_ph_downer_pump_signal
+        ||
+        force_mixer_pump_signal
+    )
     {
-        if (_[i]) return true ;
-    }
-
-    return false;
+        return true;
+    } else return false;
 }
 
 bool check_force_on()
 {
-    bool _[4] = {
-        water_pump_signal,
-        nutrient_pump_signal,
-        ph_downer_pump_signal,
-        mixer_pump_signal,
-    };
-
-    for (byte i = 0; i < sizeof(_) - 1; i++)
+    if (
+        water_pump_signal
+        ||
+        nutrient_pump_signal
+        ||
+        ph_downer_pump_signal
+        ||
+        mixer_pump_signal
+    )
     {
-        if (_[i]) return true ;
-    }
-
-    return false;
+        return true;
+   } else return false;
 }
 
 void pubSensorsVals()
@@ -212,8 +209,80 @@ void pubSensorsVals()
     client.publish(SENSOR_TOPIC, line_proto_char);
 }
 
+void testI2CSlave()
+{
+    // idle
+    io_handler.sendIdle();
+    delay(200);
 
-void setup() {
+    // ph voltage
+    io_handler.getPhVoltage();
+    delay(1000);
+    // tds voltage
+    io_handler.getTDSVoltage();
+    delay(1000);
+    // ph real value
+    io_handler.getPhLevel();
+    delay(1000);
+    // tds real value
+    io_handler.getTDS();
+    delay(1000);
+
+    // water tank level
+    io_handler.getWaterLevelCM();
+    delay(1000);
+    // nutrient tank level
+    io_handler.getNutrientLevelCM();
+    delay(1000);
+    // ph downer tank level
+    io_handler.getPhDownerLevelCM();
+    delay(1000);
+    // on+off water pump
+    io_handler.getWaterPumpStatus();
+    delay(1000);
+    io_handler.OnWaterPump();
+    delay(1000);
+    io_handler.OffWaterPump();
+    delay(500);
+    io_handler.OnWaterPump();
+    delay(1000);
+    io_handler.OffWaterPump();
+
+    io_handler.getPhDownerPumpStatus();
+    io_handler.OnPhDownerPump();
+    delay(1000);
+    io_handler.OffPhDownerPump();
+    delay(500);
+    io_handler.OnPhDownerPump();
+    delay(1000);
+    io_handler.OffPhDownerPump();
+
+    io_handler.getNutrientPumpStatus();
+    io_handler.OnNutrientPump();
+    delay(1000);
+    io_handler.OffNutrientPump();
+    delay(500);
+    io_handler.OnNutrientPump();
+    delay(1000);
+    io_handler.OffNutrientPump();
+
+    io_handler.getMixerPumpStatus();
+    io_handler.OnMixerPump();
+    delay(1000);
+    io_handler.OffMixerPump();
+    delay(500);
+    io_handler.OnMixerPump();
+    delay(1000);
+    io_handler.OffMixerPump();
+
+    String tmp;
+    DEBUG_PRINTLN("Generating line protocol string = ");
+    tmp = io_handler.generateInfluxLineProtocol();
+    DEBUG_PRINTLN(tmp);
+}
+
+void setup()
+{
 
     // Serial Ports Init 
     INIT_SERIAL(115200);
@@ -246,12 +315,10 @@ void setup() {
     esp_task_wdt_init(WDT_TIMEOUT, true);
     //add current thread to WDT watch
     esp_task_wdt_add(NULL);
-
 }
 
 
 void loop() {
-
     //reconnect MQTT Client if not connected
     if (!client.connected()) {
         reconnect_mqtt();
@@ -301,6 +368,7 @@ void loop() {
     switch(state)
     {
         case IDLE:
+            DEBUG_PRINTLN("STATE=IDLE");
             // T1
             if (tds_level <= ctl_tds_level_min)
             {
@@ -327,13 +395,15 @@ void loop() {
             }
 
             // T13
-            if (check_force_signal)
+            if (check_force_signal())
             {
+                DEBUG_PRINTLN("check_force_signal==true");
                 state = FORCE_SIGNAL;
             }
         break;
 
         case WATER_PUMP_ON:
+            DEBUG_PRINTLN("STATE=WATER_PUMP_ON");
             // T12
             if (ctl_water_pump)
             {
@@ -343,6 +413,7 @@ void loop() {
         break;
 
         case UP_NUTRIENT_LEVEL:
+            DEBUG_PRINTLN("STATE=UP_NUTRIENT_LEVEL");
             // T2
             if (check_force_signal())
             {
@@ -360,6 +431,7 @@ void loop() {
         break;
 
         case MIX_NUTRIENT_LIQUID:
+            DEBUG_PRINTLN("MIX_NUTRIENT_LIQUID");
             // T4
             if ( (millis() - mix_time) > MIX_LOCK * 1000 )
             {
@@ -383,6 +455,7 @@ void loop() {
         break;
 
         case DOWN_PH_LEVEL:
+            DEBUG_PRINTLN("DOWN_PH_LEVEL");
             // T7
             if (check_force_signal())
             {
@@ -399,6 +472,7 @@ void loop() {
         break;
 
         case MIX_PH_DOWNER_LIQUID:
+            DEBUG_PRINTLN("MIX_PH_DOWNER_LIQUID");
             // T9
             if ( (millis() - mix_time ) > MIX_LOCK * 1000 )
             {
@@ -417,6 +491,7 @@ void loop() {
         break;
 
         case FORCE_SIGNAL:
+            DEBUG_PRINTLN("FORCE_SIGNAL");
             // T14
             if (!check_force_signal())
             {
@@ -443,7 +518,6 @@ void loop() {
     }
 
     // Clear Watch dog
-    // TODO: to reactivate
-    //esp_task_wdt_reset();
+    esp_task_wdt_reset();
     delay(200);
 }
