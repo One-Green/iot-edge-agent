@@ -279,4 +279,32 @@ byte OGIO::safeMode()
 	return OGIO::safeModeStatus;
 }
 
+/* TODO WIP I2C_Anything IMPLEMENTATION
+// read float example
+
+byte  floatI2CBuffer[4];
+float floatI2CResponse;
+Wire.beginTransmission(SLAVE_ADDRESS);
+I2C_writeAnything(1);
+if (Wire.endTransmission () == 0)
+{
+    DEBUG_PRINTLN("[I2C] CMD SEND SUCCESS");
+    if (Wire.requestFrom (SLAVE_ADDRESS, 4))
+    {
+        for (byte i = 0; i < 4; i++) {floatI2CBuffer[i] = Wire.read ();}
+        memcpy(&floatI2CResponse, floatI2CBuffer, 4); // convert byte to float datatype
+        DEBUG_PRINTLN("[I2C] REQUEST EVENT SUCCESS");
+        DEBUG_PRINTLN(floatI2CResponse);
+    }
+    else
+    {
+        DEBUG_PRINTLN("[I2C] REQUEST EVENT ERROR");
+    }
+}
+else
+{
+    DEBUG_PRINTLN("[I2C] CMD ERROR");
+}
+*/
+
 OGIO io_handler;
