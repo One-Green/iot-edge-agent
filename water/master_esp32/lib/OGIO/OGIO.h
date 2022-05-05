@@ -5,11 +5,10 @@
 class OGIO {
 
 private:
-	void sendCommand(const byte cmd, const int responseSize);
-	int readInt(const byte cmd);
-	void flushI2C();
-	float readFloat(const byte cmd);
-	byte readByte(const byte cmd);
+	int readInt(int cmd);
+	float readFloat(int cmd);
+	byte readByte(int cmd);
+	void sendCommand (const byte cmd, const int responseSize);
 
 public:
 	String nodeTag;

@@ -6,6 +6,7 @@
 #include "Wire.h"
 #include "OGIO.h"
 #include "Config.h"
+#include "I2C_Anything.h"
 
 const int SLAVE_ADDRESS = 2;
 
@@ -47,78 +48,48 @@ enum
 void OGIO::initR(char *nodeTag) 
 {
 	OGIO::nodeTag = NODE_TAG;
-	Wire.begin ();   
-	OGIO::sendCommand(CMD_IDLE, 1);
-	if (Wire.available())
+	Wire.begin();
+	delay(200);
+	byte slave_addr = OGIO::sendIdle();
+	if (slave_addr == 2)
 	{
-		DEBUG_PRINT("Slave is ID: ");
-		DEBUG_PRINTLN(Wire.read(), DEC);
+		DEBUG_PRINT("[I2C] Slave is connected at adr: ");DEBUG_PRINTLN(slave_addr);
 	}
 	else
-		DEBUG_PRINTLN("No response to ID request");
+		DEBUG_PRINTLN("[I2C] no response from slave !!");
+    OGIO::safeMode();
 }
 
 void OGIO::sendCommand(const byte cmd, const int responseSize)
-{	
-	delay(50);
-	DEBUG_PRINTLN("I2C send command [" + String(cmd) + "]");
-	Wire.beginTransmission(SLAVE_ADDRESS);
-	Wire.write(cmd);
-	Wire.endTransmission();
-	Wire.requestFrom(SLAVE_ADDRESS, responseSize);  
+{
+    Wire.beginTransmission(SLAVE_ADDRESS);
+    Wire.write(cmd);
+    if (Wire.endTransmission() == 0){DEBUG_PRINT("[I2C] CMD SEND SUCCESS="); DEBUG_PRINTLN(cmd);}
+    Wire.requestFrom(SLAVE_ADDRESS, responseSize);
 }
 
-int OGIO::readInt(const byte cmd)
+int OGIO::readInt(int cmd)
 {
-	int val;  
-	OGIO::sendCommand (cmd, 2);
-	val = Wire.read ();
-	val <<= 8;
-	val |= Wire.read ();
-	return val;
+    int val;
+    OGIO::sendCommand(cmd, 1);
+    I2C_readAnything(val);
+    return val ;
 }
 
-void OGIO::flushI2C()
+float OGIO::readFloat(int cmd)
 {
-	delay(20);
-	while (Wire.available())
-	{
-		Wire.read();
-	}
+    float val;
+    OGIO::sendCommand(cmd, 4);
+    I2C_readAnything(val);
+    return val ;
 }
 
-float OGIO::readFloat(const byte cmd)
+byte OGIO::readByte(int cmd)
 {
-	// Receive from i2c char bytes
-	// and convert to float 
-	byte resp_length = 10;
-	char resp_buffer[resp_length] ; 
-
-	OGIO::sendCommand(cmd, resp_length);
-
-	if (Wire.available()) {
-		for (byte i = 0; i < resp_length; i = i + 1) 
-			{
-  				resp_buffer[i] = Wire.read();
-			}
-	}
-
-	OGIO::flushI2C();
-
-	// convert to float 
-	float val = atof(resp_buffer);
-	DEBUG_PRINTLN("readFloat >> " + String(val));
-	return val;
-
-}
-
-byte OGIO::readByte(byte cmd)
-{
-	byte val;
-	OGIO::sendCommand(cmd, 1);
-	val = Wire.read();
-	DEBUG_PRINTLN("readByte >> " + String(val));
-	return val;
+    byte val;
+    OGIO::sendCommand(cmd, 1);
+    val = Wire.read();
+    return val ;
 }
 
 byte OGIO::sendIdle()
@@ -278,33 +249,5 @@ byte OGIO::safeMode()
 	OGIO::safeModeStatus = OGIO::readByte(CMD_SAFE_MODE);
 	return OGIO::safeModeStatus;
 }
-
-/* TODO WIP I2C_Anything IMPLEMENTATION
-// read float example
-
-byte  floatI2CBuffer[4];
-float floatI2CResponse;
-Wire.beginTransmission(SLAVE_ADDRESS);
-I2C_writeAnything(1);
-if (Wire.endTransmission () == 0)
-{
-    DEBUG_PRINTLN("[I2C] CMD SEND SUCCESS");
-    if (Wire.requestFrom (SLAVE_ADDRESS, 4))
-    {
-        for (byte i = 0; i < 4; i++) {floatI2CBuffer[i] = Wire.read ();}
-        memcpy(&floatI2CResponse, floatI2CBuffer, 4); // convert byte to float datatype
-        DEBUG_PRINTLN("[I2C] REQUEST EVENT SUCCESS");
-        DEBUG_PRINTLN(floatI2CResponse);
-    }
-    else
-    {
-        DEBUG_PRINTLN("[I2C] REQUEST EVENT ERROR");
-    }
-}
-else
-{
-    DEBUG_PRINTLN("[I2C] CMD ERROR");
-}
-*/
 
 OGIO io_handler;
