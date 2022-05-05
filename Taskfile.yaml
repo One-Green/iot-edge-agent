@@ -3,6 +3,9 @@
 version: '3'
 
 dotenv:  [".env"]
+env:
+  ESP_PORT: /dev/ttyUSB0
+  MEGA_PORT: /dev/ttyUSB1
 
 tasks:
   default:
@@ -13,32 +16,32 @@ tasks:
   fs:
     desc: flash sprinkler firmware
     cmds:
-      - cd sprinkler && pio run -t upload
+      - cd sprinkler && pio run -t upload --upload-port {{.ESP_PORT}}
   fsm:
     desc: flash sprinkler firmware and serial monitor
     cmds:
       - task: fs
-      - pio device monitor -b 115200
+      - pio device monitor -b 115200 - {{.ESP_PORT}}
 
   fws:
     desc: flash water slave
     cmds:
-      - cd water/i2c_slave_mega && pio run -t upload
+      - cd water/i2c_slave_mega && pio run -t upload --upload-port {{.MEGA_PORT}}
   fwsm:
     desc: flash water slave and serial monitor
     cmds:
       - task: fws
-      - pio device monitor -b 115200
+      - pio device monitor -b 115200 -p {{.MEGA_PORT}}
 
   fwm:
     desc:  flash water master
     cmds:
-      - cd water/master_esp32 && pio run -t upload
+      - cd water/master_esp32 && pio run -t upload --upload-port {{.ESP_PORT}}
   fwmm:
     desc: flash water master and serial monitor
     cmds:
       - task: fwm
-      - pio device monitor -b 115200
+      - pio device monitor -b 115200 -p {{.ESP_PORT}}
 
   dot:
     desc: render dot files
