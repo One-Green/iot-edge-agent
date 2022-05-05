@@ -44,32 +44,30 @@ unsigned int MIX_LOCK = 15 ;               // value in seconds
 
 unsigned long pubSensorTimer;
 unsigned long subControllerTimer;
-const int sensorPubRateSec = 1; //send sensor values each x seconds
+const int sensorPubRateSec       = 1; //send sensor values each x seconds
 const int safetyCloseActuatorSec = 3; //close actuators if no response from One-Green Core
-bool mqttCallbackInError = false; // if callback received = false, if safetyCloseActuatorSec = true
+bool mqttCallbackInError         = false; // if callback received = false, if safetyCloseActuatorSec = true
 
 // Parameter from Core
 bool  ctl_water_pump              = false;
-float ctl_ph_level_min            = 0;
-float ctl_ph_level_max            = 0;
-float ctl_tds_level_min           = 0;
-float ctl_tds_level_max           = 0;
-int   linked_sprinkler            = 0 ;
-bool  force_water_pump_signal     = false ;
-bool  force_nutrient_pump_signal  = false ;
-bool  force_ph_downer_pump_signal = false ;
-bool  force_mixer_pump_signal     = false ;
-bool  water_pump_signal           = false ;
-bool  nutrient_pump_signal        = false ;
-bool  ph_downer_pump_signal       = false ;
-bool  mixer_pump_signal           = false ;
+float ctl_ph_level_min            = 0.0;
+float ctl_ph_level_max            = 0.0;
+float ctl_tds_level_min           = 0.0;
+float ctl_tds_level_max           = 0.0;
+int   linked_sprinkler            = 0;
+bool  force_water_pump_signal     = false;
+bool  force_nutrient_pump_signal  = false;
+bool  force_ph_downer_pump_signal = false;
+bool  force_mixer_pump_signal     = false;
+bool  water_pump_signal           = false;
+bool  nutrient_pump_signal        = false;
+bool  ph_downer_pump_signal       = false;
+bool  mixer_pump_signal           = false;
 
 // ----------------------------------   // Sensors Regs Values
-int water_level_cm = 0;
-int nutrient_level_cm = 0;
+int water_level_cm     = 0;
+int nutrient_level_cm  = 0;
 int ph_downer_level_cm = 0;
-int ph_level = 0;
-int tds_level = 0;
 
 // ---------------------------------- // Class(es) instantiation(s)
 WiFiClient espClient;
@@ -145,27 +143,28 @@ void mqttCallback(char *topic, byte *message, unsigned int length) {
 
     /* Parse params from MQTT Payload*/
     //Parsing Water Pumps param
-    ctl_water_pump = obj[String("p1")];
+    ctl_water_pump = obj[String("p1")].as<bool>();
     // pH min/max config
-    ctl_ph_level_min = obj[String("pmin")];
-    ctl_ph_level_max = obj[String("pmax")];
+    ctl_ph_level_min = obj[String("pmin")].as<float>();
+    ctl_ph_level_max = obj[String("pmax")].as<float>();
     // tds nutrient min/max config
-    ctl_tds_level_min = obj[String("tmin")];
-    ctl_tds_level_max = obj[String("tmax")];
+    ctl_tds_level_min = obj[String("tmin")].as<float>();
+    ctl_tds_level_max = obj[String("tmax")].as<float>();
     // connected sprinkler count
-    linked_sprinkler = obj[String("spc")];
+    linked_sprinkler = obj[String("spc")].as<int>();
     // force control
-    force_water_pump_signal =  obj[String("fps1")];
-    force_nutrient_pump_signal = obj[String("fps2")];
-    force_ph_downer_pump_signal = obj[String("fps3")];
-    force_mixer_pump_signal = obj[String("fps4")];
-    water_pump_signal = obj[String("fp1")];
-    nutrient_pump_signal = obj[String("fp2")];
-    ph_downer_pump_signal = obj[String("fp3")];
-    mixer_pump_signal = obj[String("fp4")];
+    force_water_pump_signal =  obj[String("fps1")].as<bool>();
+    force_nutrient_pump_signal = obj[String("fps2")].as<bool>();
+    force_ph_downer_pump_signal = obj[String("fps3")].as<bool>();
+    force_mixer_pump_signal = obj[String("fps4")].as<bool>();
+    water_pump_signal = obj[String("fp1")].as<bool>();
+    nutrient_pump_signal = obj[String("fp2")].as<bool>();
+    ph_downer_pump_signal = obj[String("fp3")].as<bool>();
+    mixer_pump_signal = obj[String("fp4")].as<bool>();
 }
 
-bool check_force_signal()
+// Helpers functions
+bool checkForceSignal()
 {
     if (
         force_water_pump_signal
@@ -181,7 +180,7 @@ bool check_force_signal()
     } else return false;
 }
 
-bool check_force_on()
+bool checkForceOn()
 {
     if (
         water_pump_signal
@@ -196,6 +195,35 @@ bool check_force_on()
         return true;
    } else return false;
 }
+
+bool pHValAvailable()
+{
+    if (
+        ctl_ph_level_min != 0.0
+        &
+        ctl_ph_level_max != 0.0
+        &
+        io_handler.pH != 0.0
+    )
+    {
+        return true ;
+    } else return false;
+}
+
+bool TDSValAvailable()
+{
+    if (
+        ctl_tds_level_min != 0.0
+        &
+        ctl_tds_level_max != 0.0
+        &
+        io_handler.TDS != 0.0
+    )
+    {
+        return true ;
+    } else return false;
+}
+
 
 void pubSensorsVals()
 {
@@ -370,7 +398,7 @@ void loop() {
         case IDLE:
             DEBUG_PRINTLN("STATE=IDLE");
             // T1
-            if (tds_level <= ctl_tds_level_min)
+            if ( (io_handler.TDS <= ctl_tds_level_min) & TDSValAvailable() )
             {
                 nutrient_time = millis();
                 mix_time = millis();
@@ -379,7 +407,7 @@ void loop() {
                 state = UP_NUTRIENT_LEVEL;
             }
             // T6
-            if (ph_level >= ctl_ph_level_max )
+            if ( (io_handler.pH >= ctl_ph_level_max) & pHValAvailable() )
             {
                 ph_downer_time = millis();
                 mix_time = millis();
@@ -395,9 +423,9 @@ void loop() {
             }
 
             // T13
-            if (check_force_signal())
+            if (checkForceSignal())
             {
-                DEBUG_PRINTLN("check_force_signal==true");
+                DEBUG_PRINTLN("checkForceSignal==true");
                 state = FORCE_SIGNAL;
             }
         break;
@@ -415,7 +443,7 @@ void loop() {
         case UP_NUTRIENT_LEVEL:
             DEBUG_PRINTLN("STATE=UP_NUTRIENT_LEVEL");
             // T2
-            if (check_force_signal())
+            if (checkForceSignal())
             {
                 io_handler.OffNutrientPump();
                 io_handler.OffMixerPump();
@@ -427,7 +455,6 @@ void loop() {
                 io_handler.OffNutrientPump();
                 state = MIX_NUTRIENT_LIQUID;
             }
-
         break;
 
         case MIX_NUTRIENT_LIQUID:
@@ -442,22 +469,21 @@ void loop() {
             }
             // T5
             if (
-                tds_level >= ctl_tds_level_max
+                io_handler.TDS >= ctl_tds_level_max
                 ||
-                check_force_signal()
+                checkForceSignal()
             )
             {
                 io_handler.OffNutrientPump();
                 io_handler.OffMixerPump();
                 state = IDLE;
             }
-
         break;
 
         case DOWN_PH_LEVEL:
             DEBUG_PRINTLN("DOWN_PH_LEVEL");
             // T7
-            if (check_force_signal())
+            if (checkForceSignal())
             {
                 io_handler.OffPhDownerPump();
                 io_handler.OffMixerPump();
@@ -482,7 +508,7 @@ void loop() {
                 state = DOWN_PH_LEVEL;
             }
             // T10
-            if ( ph_level <= ctl_ph_level_min & check_force_signal())
+            if ( io_handler.pH <= ctl_ph_level_min & checkForceSignal())
             {
                 io_handler.OffPhDownerPump();
                 io_handler.OffMixerPump();
@@ -493,7 +519,7 @@ void loop() {
         case FORCE_SIGNAL:
             DEBUG_PRINTLN("FORCE_SIGNAL");
             // T14
-            if (!check_force_signal())
+            if (!checkForceSignal())
             {
                 io_handler.OffWaterPump();
                 io_handler.OffNutrientPump();
