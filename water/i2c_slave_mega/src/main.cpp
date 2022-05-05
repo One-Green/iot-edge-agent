@@ -16,10 +16,14 @@ Author: Shanmugathas Vigneswaran
 unsigned long lastReceiveEvent;
 const int safetyCloseActuatorSec = 2; // close actuators if no request from I2C Master
 
+// refresh sensors timer
+unsigned int refresh_bouncer=millis() ; // millis() holder
+const int REFRESH_TIME=500 ; // refresh every 500 millis
+
 // i2c config
 const byte I2C_ADDRESS = 2;
 volatile boolean haveData = false;
-volatile int command;
+int command;
 // i2c exchange table
 enum
 {
@@ -68,106 +72,68 @@ bool  nutrientPumpStatus;
 bool  phDownerPumpStatus;
 bool  mixerPumpStatus;
 
-void receiveEvent (int howMany)
- {
- if (howMany >= (sizeof command))
-   {
-   I2C_readAnything (command);
-   haveData = true;
-   }
- }
-
-void requestEvent ()
+void receiveEvent(int howMany)
 {
-  switch (command)
-  {
-    case CMD_IDLE: 
-        I2C_writeAnything(2);
-        break;
+    command = Wire.read();
+    haveData = true;
+    lastReceiveEvent = millis();
+}
 
-    case CMD_READ_PH_VOLTAGE:
-        I2C_writeAnything(phVoltage);
-        break;
-    
-    case CMD_READ_TDS_VOLTAGE:
-        I2C_writeAnything(tdsVoltage);
-        break;
 
-    case CMD_READ_PH:
-        I2C_writeAnything(phLevel);
-        break;
 
-    case CMD_READ_TDS:
-        I2C_writeAnything(tdsLevel);
-        break;
-    
-    case CMD_READ_WATER_LVL:
-        I2C_writeAnything(waterTankLevel);
-        break;
-    
-    case CMD_READ_NUTRIENT_LVL:
-        I2C_writeAnything(nutrientTankLevel);
-        break;
+void requestEvent()
+{
+    switch (command)
+    {
+    // ------------------- sensors cases
+    case CMD_IDLE: Wire.write(2); break;
+    case CMD_READ_PH_VOLTAGE: I2C_writeAnything(phVoltage); break;
+    case CMD_READ_TDS_VOLTAGE: I2C_writeAnything(tdsVoltage); break;
+    case CMD_READ_PH: I2C_writeAnything(phLevel); break;
+    case CMD_READ_TDS: I2C_writeAnything(tdsLevel); break;
+    case CMD_READ_WATER_LVL: I2C_writeAnything(waterTankLevel); break;
+    case CMD_READ_NUTRIENT_LVL: I2C_writeAnything(nutrientTankLevel); break;
+    case CMD_READ_PH_LVL: I2C_writeAnything(phDownerTankLevel); break;
 
-    case CMD_READ_PH_LVL:
-        I2C_writeAnything(phDownerTankLevel);
-        break;
-
-    // ------------------- water pump cases 
-    case CMD_READ_WATER_PUMP:
-        I2C_writeAnything(io_handler.getWaterPumpStatus());
-        break;
-    
+    // ------------------- water pump cases
+    case CMD_READ_WATER_PUMP: I2C_writeAnything(io_handler.getWaterPumpStatus()); break;
     case CMD_WRITE_LOW_WATER_PUMP:
         io_handler.setWaterPump(0);
         I2C_writeAnything(io_handler.getWaterPumpStatus());
         break;
-
     case CMD_WRITE_HIGH_WATER_PUMP:
         io_handler.setWaterPump(1);
         I2C_writeAnything(io_handler.getWaterPumpStatus());
         break;
 
     // ------------------- nutrient pump cases
-    case CMD_READ_NUTRIENT_PUMP:
-        I2C_writeAnything(io_handler.getNutrientPumpStatus());
-        break;
-    
+    case CMD_READ_NUTRIENT_PUMP: I2C_writeAnything(io_handler.getNutrientPumpStatus()); break;
     case CMD_WRITE_LOW_NUTRIENT_PUMP:
         io_handler.setNutrientPump(0);
         I2C_writeAnything(io_handler.getNutrientPumpStatus());
         break;
-    
     case CMD_WRITE_HIGH_NUTRIENT_PUMP:
         io_handler.setNutrientPump(1);
         I2C_writeAnything(io_handler.getNutrientPumpStatus());
         break;
 
     // -------------------  ph downer pump cases
-    case CMD_READ_PH_DOWNER_PUMP:
-        I2C_writeAnything(io_handler.getPhDownerPumpStatus());
-        break;
-
+    case CMD_READ_PH_DOWNER_PUMP: I2C_writeAnything(io_handler.getPhDownerPumpStatus()); break;
     case CMD_WRITE_LOW_PH_DOWNER_PUMP:
         io_handler.setPHDownerPump(0);
         I2C_writeAnything(io_handler.getPhDownerPumpStatus());
         break;
-
     case CMD_WRITE_HIGH_PH_DOWNER_PUMP:
         io_handler.setPHDownerPump(1);
         I2C_writeAnything(io_handler.getPhDownerPumpStatus());
         break;
 
     // ------------------- mixer pump cases
-    case CMD_READ_MIXER_PUMP:
-        I2C_writeAnything(io_handler.getMixerPumpStatus());
-        break;
-    
+    case CMD_READ_MIXER_PUMP: I2C_writeAnything(io_handler.getMixerPumpStatus()); break;
     case CMD_WRITE_LOW_MIXER_PUMP:
         io_handler.setMixerPump(0);
         I2C_writeAnything(io_handler.getMixerPumpStatus());
         break;
-
     case CMD_WRITE_HIGH_MIXER_PUMP:
         io_handler.setMixerPump(1);
         I2C_writeAnything(io_handler.getMixerPumpStatus());
@@ -180,33 +146,31 @@ void requestEvent ()
         io_handler.setMixerPump(0);
         I2C_writeAnything(1);
         break;
-  }
+    }
 
 }  
 
 
 void setup() 
 {
-  command = 0;
-  INIT_SERIAL(115200);
-  DEBUG_PRINT("Sampling TDS voltage");
-  for (byte i=0; i <20; i++)
-  {
-    io_handler.getTDSVoltage();
-    delay(50);
-    DEBUG_PRINT(".");
-  }
-  DEBUG_PRINTLN(" done");
+    INIT_SERIAL(115200);
+    DEBUG_PRINT("Sampling TDS voltage");
+    for (byte i=0; i <20; i++)
+    {
+        io_handler.getTDSVoltage();
+        delay(50);
+        DEBUG_PRINT(".");
+    }
+    DEBUG_PRINTLN(" done");
 
-  Wire.begin(I2C_ADDRESS);
-  Wire.onReceive(receiveEvent);  
-  Wire.onRequest(requestEvent); 
-  DEBUG_PRINTLN("I2C Salve is up, addr =" + String(I2C_ADDRESS));
-  io_handler.initR();     // I/O Arduino mega setup digital pin mode
-  lastReceiveEvent = millis();
+    Wire.begin(I2C_ADDRESS);
+    Wire.onReceive(receiveEvent);
+    Wire.onRequest(requestEvent);
+    DEBUG_PRINTLN("I2C Salve is up, addr =" + String(I2C_ADDRESS));
+    io_handler.initR();     // I/O Arduino mega setup digital pin mode
+    lastReceiveEvent = millis();
 
-  // TODO : to reactivate
-  // wdt_enable(WDTO_2S);
+    wdt_enable(WDTO_2S);
 }
 
 void safeModHandler()
@@ -229,24 +193,28 @@ void safeModHandler()
 
 void loop() 
 {
-    // TODO : to reactivate
-    // safeModHandler();
+    safeModHandler();
 
-    waterTankLevel = io_handler.getWaterLevelCM(); delay(50);
-    nutrientTankLevel = io_handler.getNutrientLevelCM(); delay(50);
-    phDownerTankLevel = io_handler.getPhDownerLevelCM(); delay(50);
-    
-    phVoltage  = io_handler.getPhVoltage();
-    tdsVoltage = io_handler.getTDSVoltage();
-    phLevel    = io_handler.getPhLevel();
-    tdsLevel   = io_handler.getTDS();
+    if ( (millis() - refresh_bouncer) > REFRESH_TIME )
+    {
+        phVoltage  = io_handler.getPhVoltage();
+        tdsVoltage = io_handler.getTDSVoltage();
+        phLevel    = io_handler.getPhLevel();
+        tdsLevel   = io_handler.getTDS();
+
+        waterTankLevel = io_handler.getWaterLevelCM(); delay(50);
+        nutrientTankLevel = io_handler.getNutrientLevelCM(); delay(50);
+        phDownerTankLevel = io_handler.getPhDownerLevelCM(); delay(50);
+
+        refresh_bouncer = millis();
+        DEBUG_PRINTLN("REFRESH SENSORS");
+    }
 
     if (haveData)
     {
-        DEBUG_PRINT("Received a CMD="); DEBUG_PRINTLN(command);
+        DEBUG_PRINT("RECEIVED COMMAND=");DEBUG_PRINTLN(command);
         haveData = false;
     }
 
-    // TODO : to reactivate
-    // wdt_reset();
+    wdt_reset();
 }
