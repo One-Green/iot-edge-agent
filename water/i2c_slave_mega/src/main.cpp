@@ -27,37 +27,36 @@ int command;
 // i2c exchange table
 enum
 {
-	CMD_IDLE                      = 0,
+    CMD_IDLE                      = 0,
 
-  // Sensors report commands
-	CMD_READ_PH_VOLTAGE           = 1,
-	CMD_READ_TDS_VOLTAGE          = 2,
-	CMD_READ_PH                   = 3,
-	CMD_READ_TDS                  = 4,
-	CMD_READ_WATER_LVL            = 5,
-	CMD_READ_NUTRIENT_LVL         = 6,
-	CMD_READ_PH_LVL               = 7,
+    // Sensors report commands
+    CMD_READ_PH_VOLTAGE           = 1,
+    CMD_READ_TDS_VOLTAGE          = 2,
+    CMD_READ_PH                   = 3,
+    CMD_READ_TDS                  = 4,
+    CMD_READ_WATER_LVL            = 5,
+    CMD_READ_NUTRIENT_LVL         = 6,
+    CMD_READ_PH_LVL               = 7,
 
-	CMD_READ_WATER_PUMP           = 8,
-	CMD_WRITE_LOW_WATER_PUMP      = 9,
-	CMD_WRITE_HIGH_WATER_PUMP     = 10,
-	
-	CMD_READ_NUTRIENT_PUMP        = 11,
-	CMD_WRITE_LOW_NUTRIENT_PUMP   = 12,
-	CMD_WRITE_HIGH_NUTRIENT_PUMP  = 13,
+    CMD_READ_WATER_PUMP           = 8,
+    CMD_WRITE_LOW_WATER_PUMP      = 9,
+    CMD_WRITE_HIGH_WATER_PUMP     = 10,
 
-	CMD_READ_PH_DOWNER_PUMP       = 14,
-	CMD_WRITE_LOW_PH_DOWNER_PUMP  = 15,
-	CMD_WRITE_HIGH_PH_DOWNER_PUMP = 16,
+    CMD_READ_NUTRIENT_PUMP        = 11,
+    CMD_WRITE_LOW_NUTRIENT_PUMP   = 12,
+    CMD_WRITE_HIGH_NUTRIENT_PUMP  = 13,
 
-	CMD_READ_MIXER_PUMP           = 17,
-	CMD_WRITE_LOW_MIXER_PUMP      = 18,
-	CMD_WRITE_HIGH_MIXER_PUMP     = 19,
+    CMD_READ_PH_DOWNER_PUMP       = 14,
+    CMD_WRITE_LOW_PH_DOWNER_PUMP  = 15,
+    CMD_WRITE_HIGH_PH_DOWNER_PUMP = 16,
 
-	// safety actions 
-	CMD_SAFE_MODE 			      = 20
+    CMD_READ_MIXER_PUMP           = 17,
+    CMD_WRITE_LOW_MIXER_PUMP      = 18,
+    CMD_WRITE_HIGH_MIXER_PUMP     = 19,
+
+    // safety actions
+    CMD_SAFE_MODE 			      = 20
 };
-
 
 // og flow variables
 float waterTankLevel;
@@ -78,8 +77,6 @@ void receiveEvent(int howMany)
     haveData = true;
     lastReceiveEvent = millis();
 }
-
-
 
 void requestEvent()
 {
@@ -147,9 +144,7 @@ void requestEvent()
         I2C_writeAnything(1);
         break;
     }
-
-}  
-
+}
 
 void setup() 
 {
