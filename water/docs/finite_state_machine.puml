@@ -69,6 +69,13 @@ MIX_NUTRIENT_LIQUID --> IDLE
         OFF Mixer pump
     end note
 
+MIX_NUTRIENT_LIQUID --> MIX_NUTRIENT_LIQUID
+    note on link
+        if mixer_pump_status == off
+        ON Mixer pump
+    end note
+
+
 
 ' ==================== pH level regulation  ====================
 ' ==============================================================
@@ -128,6 +135,14 @@ MIX_PH_DOWNER_LIQUID --> IDLE
         OFF pH downer pump
         OFF Mixer pump
     end note
+
+
+MIX_PH_DOWNER_LIQUID --> MIX_PH_DOWNER_LIQUID
+    note on link
+        if mixer_pump_status == off
+        ON Mixer pump
+    end note
+
 
 IDLE --> WATER_PUMP_ON
     note on link

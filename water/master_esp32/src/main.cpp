@@ -428,6 +428,12 @@ void loop() {
                 DEBUG_PRINTLN("checkForceSignal==true");
                 state = FORCE_SIGNAL;
             }
+
+            // always ensure all actuator are in idle
+            io_handler.OffWaterPump();
+            io_handler.OffNutrientPump();
+            io_handler.OffPhDownerPump();
+            io_handler.OffMixerPump();
         break;
 
         case WATER_PUMP_ON:
@@ -438,6 +444,9 @@ void loop() {
                 io_handler.OffWaterPump();
                 state = IDLE;
             }
+            // ensure other pumps are down
+            io_handler.OffNutrientPump();
+            io_handler.OffPhDownerPump();
         break;
 
         case UP_NUTRIENT_LEVEL:
@@ -455,6 +464,9 @@ void loop() {
                 io_handler.OffNutrientPump();
                 state = MIX_NUTRIENT_LIQUID;
             }
+            // ensure other pump are down
+            io_handler.OffWaterPump();
+            io_handler.OffPhDownerPump();
         break;
 
         case MIX_NUTRIENT_LIQUID:
@@ -469,7 +481,7 @@ void loop() {
             }
             // T5
             if (
-                io_handler.TDS >= ctl_tds_level_max
+                (io_handler.TDS >= ctl_tds_level_max)
                 ||
                 checkForceSignal()
             )
@@ -478,6 +490,19 @@ void loop() {
                 io_handler.OffMixerPump();
                 state = IDLE;
             }
+
+            // in state check if mixer pump is up
+            if (
+                (io_handler.TDS <= ctl_tds_level_max)
+                &
+                !io_handler.getMixerPumpStatus()
+            )
+            {
+                io_handler.OnMixerPump();
+            }
+            // ensure other pump are down
+            io_handler.OffWaterPump();
+            io_handler.OffPhDownerPump();
         break;
 
         case DOWN_PH_LEVEL:
@@ -495,6 +520,9 @@ void loop() {
                 io_handler.OffPhDownerPump();
                 state = MIX_PH_DOWNER_LIQUID;
             }
+            // ensure other pump are down
+            io_handler.OffWaterPump();
+            io_handler.OffNutrientPump();
         break;
 
         case MIX_PH_DOWNER_LIQUID:
@@ -508,12 +536,28 @@ void loop() {
                 state = DOWN_PH_LEVEL;
             }
             // T10
-            if ( io_handler.pH <= ctl_ph_level_min & checkForceSignal())
+            if (
+                io_handler.pH <= ctl_ph_level_min
+                ||
+                checkForceSignal()
+                )
             {
                 io_handler.OffPhDownerPump();
                 io_handler.OffMixerPump();
                 state = IDLE;
             }
+
+            // in state check if mixer pump is up
+            if (
+                io_handler.pH >= ctl_ph_level_min
+                &
+                !io_handler.getMixerPumpStatus()
+            ){
+                io_handler.OnMixerPump();
+            }
+            // ensure other pump are down
+            io_handler.OffWaterPump();
+            io_handler.OffNutrientPump();
         break;
 
         case FORCE_SIGNAL:
