@@ -21,7 +21,7 @@ tasks:
     desc: flash sprinkler firmware and serial monitor
     cmds:
       - task: fs
-      - pio device monitor -b 115200 - {{.ESP_PORT}}
+      - pio device monitor -b 115200 -p {{.ESP_PORT}}
 
   fws:
     desc: flash water slave
