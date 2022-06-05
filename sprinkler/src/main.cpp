@@ -51,7 +51,7 @@ int SOIL_MOISTURE_ADC_MAX = 4095 ;
 int SOIL_MOISTURE_ADC_MIN = 1300 ;
 
 // controller callback variables
-unsigned int MQTT_INTERACTION_DELAY=5 ; //  publish/received every x seconds
+unsigned int MQTT_INTERACTION_DELAY=1 ; //  publish/received every x seconds
 unsigned int mqtt_time_bouncer ;        //  keep last mqtt interaction
 String water_link_tag ;                 //  json key=wtl
 bool fctl_water_valve_signal = false ;  //  json key=wvs
