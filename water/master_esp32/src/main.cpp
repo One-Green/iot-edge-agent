@@ -428,18 +428,12 @@ void loop() {
                 DEBUG_PRINTLN("checkForceSignal==true");
                 state = FORCE_SIGNAL;
             }
-
-            // always ensure all actuator are in idle
-            io_handler.OffWaterPump();
-            io_handler.OffNutrientPump();
-            io_handler.OffPhDownerPump();
-            io_handler.OffMixerPump();
         break;
 
         case WATER_PUMP_ON:
             DEBUG_PRINTLN("STATE=WATER_PUMP_ON");
             // T12
-            if (ctl_water_pump)
+            if (ctl_water_pump == false)
             {
                 io_handler.OffWaterPump();
                 state = IDLE;
