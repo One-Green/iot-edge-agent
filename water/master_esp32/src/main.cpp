@@ -374,9 +374,9 @@ void loop() {
     }
 
     displayLib.updateDisplay(
-        io_handler.WaterTankLevel,
-        io_handler.NutrientTankLevel,
-        io_handler.PHTankLevel,
+        io_handler.WaterTankLevelPercent,
+        io_handler.NutrientTankLevelPercent,
+        io_handler.PHTankLevelPercent,
         io_handler.TDSVoltage,
         io_handler.TDS,
         io_handler.phVoltage,

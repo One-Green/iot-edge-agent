@@ -32,5 +32,10 @@ Set .env file with these values
     # else use any variable to deactivate
     SERIAL_PRINT_VAR=SERIAL_PRINT_ON
     NODE_TAG=
+    # water node configuration
+    # used to define 0-100% liquid level based on sonar distance
+    WATER_TANK_HEIGHT_CM=100
+    NUTRIENT_TANK_HEIGHT_CM=100
+    PH_DOWNER_TANK_HEIGHT_CM=100
 
 Use Makefile cmd to flash

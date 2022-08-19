@@ -141,6 +141,27 @@ float OGIO::getPhDownerLevelCM()
 	return OGIO::PHTankLevel;
 }
 
+int OGIO::getWaterLevelPercent()
+{
+    OGIO::getWaterLevelCM() ;
+    OGIO::WaterTankLevelPercent = map( (int)OGIO::WaterTankLevel, 5, WATER_TANK_HEIGHT_CM, 100, 0 ) ;
+    return OGIO::WaterTankLevelPercent ;
+}
+
+int OGIO::getNutrientLevelPercent()
+{
+    OGIO::getNutrientLevelCM() ;
+    OGIO::NutrientTankLevelPercent = map( (int)OGIO::NutrientTankLevel, 5, NUTRIENT_TANK_HEIGHT_CM, 100, 0 ) ;
+    return OGIO::NutrientTankLevelPercent ;
+}
+
+int OGIO::getPhDownerLevelPercent()
+{
+    OGIO::getPhDownerLevelCM() ;
+    OGIO::PHTankLevelPercent = map( (int)OGIO::PHTankLevel, 5, PH_DOWNER_TANK_HEIGHT_CM, 100, 0 ) ;
+    return OGIO::PHTankLevelPercent ;
+}
+
 
 String OGIO::generateInfluxLineProtocol()
 {
@@ -152,9 +173,9 @@ String OGIO::generateInfluxLineProtocol()
 	this->getPhLevel();
 	this->getTDS();
 
-	this->getWaterLevelCM();
-	this->getNutrientLevelCM();
-	this->getPhDownerLevelCM();
+	this->getWaterLevelPercent();
+	this->getNutrientLevelPercent();
+	this->getPhDownerLevelPercent();
 
 	String lineProtoStr =
 		"water,tag=" + OGIO::nodeTag
@@ -162,9 +183,9 @@ String OGIO::generateInfluxLineProtocol()
 		+ "tds_voltage=" + String(OGIO::TDSVoltage)+"," 				 		    // raw adc
 		+ "ph_level=" + String(OGIO::pH)+","                 					    // real value
 		+ "tds_level=" + String(OGIO::TDS)+","										// real value
-		+ "water_tk_lvl=" + String((unsigned int) OGIO::WaterTankLevel)+"i," 		// real level in cm
-		+ "nutrient_tk_lvl=" + String((unsigned int) OGIO::NutrientTankLevel)+"i,"  // real level in cm
-		+ "ph_downer_tk_lvl=" + String((unsigned int )OGIO::PHTankLevel)+"i";		// real level in cm
+		+ "water_tk_lvl=" + String((unsigned int) OGIO::WaterTankLevelPercent)+"i," 		// real level in cm
+		+ "nutrient_tk_lvl=" + String((unsigned int) OGIO::NutrientTankLevelPercent)+"i,"  // real level in cm
+		+ "ph_downer_tk_lvl=" + String((unsigned int )OGIO::PHTankLevelPercent)+"i";		// real level in cm
 	return lineProtoStr ;
 }
 

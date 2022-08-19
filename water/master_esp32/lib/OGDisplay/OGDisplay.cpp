@@ -78,13 +78,13 @@ void DisplayLib::printHeader(
 void DisplayLib::printTemplate() {
 
     tft.setCursor(2, 60);
-    tft.print("Water tk (cm): ");
+    tft.print("Water tk (%): ");
 
     tft.setCursor(2, 75);
-    tft.print("Nutr. tk (cm): ");
+    tft.print("Nutr. tk (%): ");
 
     tft.setCursor(2, 90);
-    tft.print("pH dwn. tk (cm): ");
+    tft.print("pH dwn. tk (%): ");
 
     tft.setCursor(2, 105);
     tft.print("TDS (V): ");

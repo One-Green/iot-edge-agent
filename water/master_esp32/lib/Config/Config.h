@@ -54,3 +54,14 @@
 #error "CONTROLLER_TOPIC is not defined"
 #endif
 
+#ifndef WATER_TANK_HEIGHT_CM
+#error "WATER_TANK_HEIGHT_CM is not defined"
+#endif
+
+#ifndef NUTRIENT_TANK_HEIGHT_CM
+#error "WATER_TANK_HEIGHT_CM is not defined"
+#endif
+
+#ifndef PH_DOWNER_TANK_HEIGHT_CM
+#error "PH_DOWNER_TANK_HEIGHT_CM is not defined"
+#endif

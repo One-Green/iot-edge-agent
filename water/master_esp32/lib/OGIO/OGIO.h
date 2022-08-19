@@ -19,7 +19,10 @@ public:
 	float WaterTankLevel;
 	float PHTankLevel;
 	float NutrientTankLevel;
-	String lineProtoStr; // formatted metrics for influx db line protocol 
+	int WaterTankLevelPercent;
+    int NutrientTankLevelPercent;
+    int PHTankLevelPercent;
+	String lineProtoStr; // formatted metrics for influx db line protocol
 
 	byte sendIdle();
     byte idleReturn;
@@ -36,6 +39,10 @@ public:
 	float getWaterLevelCM();
 	float getNutrientLevelCM();
 	float getPhDownerLevelCM();
+
+    int getWaterLevelPercent();
+	int getNutrientLevelPercent();
+	int getPhDownerLevelPercent();
 
 	String generateInfluxLineProtocol();
 	
