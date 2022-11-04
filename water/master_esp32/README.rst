@@ -1,6 +1,8 @@
 ESP32 firmware 
 ==============
 
+Screen patch: copy  **User_Setup.h** in .pio/libdeps/TFT_eSPI/User_Setup.h make screen working
+
 One-Green Core interaction :
 
 - MQTT Publish to topic: **SENSOR_TOPIC** = "water/sensor".
