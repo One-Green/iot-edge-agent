@@ -23,6 +23,15 @@ tasks:
       - task: fs
       - pio device monitor -b 115200 -p {{.ESP_PORT}}
 
+  run-build-server:
+    desc: run fastapi server
+    # language=sh
+    cmds:
+      - >
+        uvicorn main:app --reload
+    aliases:
+      - rs
+
   fws:
     desc: flash water slave
     cmds:

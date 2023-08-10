@@ -1,48 +1,15 @@
 FROM python:3.11.0-bullseye
+ENV PYTHONUNBUFFERED=true
 
-RUN pip install platformio
+WORKDIR /app
 
-COPY . .
+COPY build_tool/ ./build_tool/
+COPY main.py .
+COPY requirements.txt .
 
-# setup dependencies for sprinkler firmware build
-ENV NODE_TAG=test
-ENV WIFI_SSID=test
-ENV WIFI_PASSWORD=test
-ENV MQTT_SERVER=test
-ENV MQTT_PORT=1000
-ENV MQTT_USER=test
-ENV MQTT_PASSWORD=test
-ENV SERIAL_PRINT_VAR=SERIAL_PRINT_ON
-ENV TFT_PRINT_VAR=TFT_PRINT_ON
-RUN cd sprinkler && pio run
+RUN apt update && apt install git -y
+RUN pip install -r requirements.txt
+RUN pio upgrade
 
-# setup dependencies for water master firmware build
-ENV NODE_TAG=test
-ENV WIFI_SSID=test
-ENV WIFI_PASSWORD=test
-ENV MQTT_SERVER=test
-ENV MQTT_PORT=1000
-ENV MQTT_USER=test
-ENV MQTT_PASSWORD=test
-ENV SERIAL_PRINT_VAR=SERIAL_PRINT_ON
-ENV TFT_PRINT_VAR=TFT_PRINT_ON
-ENV WATER_TANK_HEIGHT_CM=100
-ENV NUTRIENT_TANK_HEIGHT_CM=100
-ENV PH_DOWNER_TANK_HEIGHT_CM=100
-RUN cd water/master_esp32 && pio run
-
-# setup dependencies for water slave firmware build
-ENV NODE_TAG=test
-ENV WIFI_SSID=test
-ENV WIFI_PASSWORD=test
-ENV MQTT_SERVER=test
-ENV MQTT_PORT=1000
-ENV MQTT_USER=test
-ENV MQTT_PASSWORD=test
-ENV SERIAL_PRINT_VAR=SERIAL_PRINT_ON
-ENV TFT_PRINT_VAR=TFT_PRINT_ON
-ENV WATER_TANK_HEIGHT_CM=100
-ENV NUTRIENT_TANK_HEIGHT_CM=100
-ENV PH_DOWNER_TANK_HEIGHT_CM=100
-RUN cd water/i2c_slave_mega && pio run
-
+ENTRYPOINT []
+CMD uvicorn main:app --host=0.0.0.0 --port=8080 --reload
