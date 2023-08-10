@@ -39,7 +39,6 @@ def build(_build: BuildParam):
         pio_build(src_path)
         dist_path = os.path.join(src_path, ".pio", "build")
         logger.debug({"dist_path": dist_path})
-        time.sleep(60)
         target_zip_path, zip_file = make_zip(dist_path)
         logger.debug({"zip_path": str(target_zip_path)})
 
@@ -48,12 +47,3 @@ def build(_build: BuildParam):
             media_type="application/x-zip-compressed",
             headers={"Content-Disposition": f"attachment; filename={zip_file}"}
         )
-
-
-@app.get("/test")
-def build():
-    return FileResponse(
-        path='/tmp/tmptalkxnnl2/sprinkler/.pio/build/dist-2ddc3778-37b5-11ee-b376-0242ac120002.zip',
-        media_type="application/x-zip-compressed",
-        headers={"Content-Disposition": f"attachment; filename=dist-2ddc3778-37b5-11ee-b376-0242ac120002.zip"}
-    )

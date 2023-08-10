@@ -4,7 +4,6 @@ import configparser
 from .logger import logger
 import shutil
 import uuid
-import time
 
 _pio_run = "cd {src_path} && pio run"
 _str_flag = '-D "{k}=\\"{v}\\""'
@@ -50,18 +49,6 @@ def pio_build(_src_path: str):
 
 
 def make_zip(_build_path: str):
-    max_attempt = 10
     dist_uuid = f"dist-{uuid.uuid1()}"
-    target_zip_path = f"{os.path.join(_build_path, dist_uuid)}.zip"
     uuid_zip_path = shutil.make_archive(dist_uuid, 'zip', _build_path)
-
-    for i in range(max_attempt):
-        try:
-            with open(target_zip_path, 'rb') as _:
-                break
-        except OSError:
-            time.sleep(3)
-    else:
-        raise OSError(f"Can not read {target_zip_path} after {max_attempt} attempts")
-
-    return shutil.move(uuid_zip_path, target_zip_path), f"{dist_uuid}.zip"
+    return uuid_zip_path, f"{dist_uuid}.zip"
