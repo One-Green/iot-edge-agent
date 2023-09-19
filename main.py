@@ -1,7 +1,7 @@
 import os.path
 from git import Repo
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 from tempfile import TemporaryDirectory
 from build_tool.models import BuildParam
 from build_tool.logger import logger
@@ -23,6 +23,18 @@ def build(_build: BuildParam):
         "git_repo": _build.git_repo,
         "git_ref": _build.git_ref
     })
+
+    # fix int/string json python
+    # https://bugs.python.org/issue34972
+    for i, _ in enumerate(_build.platformio_build_flags):
+        try:
+            value = _["MQTT_PORT"]
+            if value:
+                _build.platformio_build_flags[i] = {"MQTT_PORT": int(value)}
+                break
+        except KeyError:
+            pass
+
     with TemporaryDirectory() as _tmp:
         repo = Repo.clone_from(_build.git_repo, _tmp)
         repo.git.checkout(_build.git_ref)
@@ -47,3 +59,8 @@ def build(_build: BuildParam):
             media_type="application/x-zip-compressed",
             headers={"Content-Disposition": f"attachment; filename={zip_file}"}
         )
+
+
+@app.get("/ping")
+def get_ping():
+    return PlainTextResponse("ok")
